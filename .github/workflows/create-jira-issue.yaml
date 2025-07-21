@@ -51,7 +51,7 @@ jobs:
           #해당 프로젝트의 키 (ex. PRJ)
           project: ECS
           #이슈 타입 (ex. Task, Bug, Subtask)
-          issuetype: Task
+          issuetype: Sub-task
           summary: "${{ github.event.issue.title }}"
           description: "${{ steps.md2jira.outputs.output-text }}"
           fields: |
