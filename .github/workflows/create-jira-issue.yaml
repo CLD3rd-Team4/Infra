@@ -39,7 +39,7 @@ jobs:
       
       - name: Extract __ticket_number
         run: |
-          ticket_number=$(jq -r '.__ticket_number' output.json)
+          ticket_number=$(jq -r '."__ticket_number"' output.json)
           echo "::set-output name=ticket_number::$ticket_number"
 
 
