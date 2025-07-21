@@ -57,7 +57,7 @@ jobs:
           fields: |
             {
               "parent": {
-                "key": "${{ steps.issue-parser.outputs.__ticket_number }}"
+                "key": "${{ steps.issue-parser.outputs.issueparser_parentKey }}"
               }
             }
 
