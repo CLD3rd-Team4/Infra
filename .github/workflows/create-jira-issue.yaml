@@ -22,7 +22,7 @@ jobs:
           ref: main
 
       - name: Issue Parser
-        uses: stefanbuck/github-issue-praser@v3
+        uses: stefanbuck/github-issue-parser@v3
         id: issue-parser
         with:
           template-path: .github/ISSUE_TEMPLATE/issue_form.yml
@@ -30,17 +30,6 @@ jobs:
       - name: Log Issue Parser
         run: |
           echo '${{ steps.issue-parser.outputs.jsonString }}'
-
-      - name: Save JSON to file
-        run: |
-          echo "${{ steps.issue-parser.outputs.jsonString }}" > output.json
-        env:
-          JSON_STRING: ${{ steps.issue-parser.outputs.jsonString }}
-      
-      - name: Extract __ticket_number
-        run: |
-          ticket_number=$(jq -r '."__ticket_number"' output.json)
-          echo "::set-output name=ticket_number::$ticket_number"
 
 
       - name: Convert markdown to Jira Syntax
@@ -67,12 +56,12 @@ jobs:
           fields: |
             {
               "parent": {
-                "key": "${{ steps.extract_ticket.outputs.ticket_number }}"
+                "key": "${{ steps.issue-parser.outputs.issueparser_parent }}"
               }
             }
 
       - name: Log created issue
-        run: echo "Jira Issue ${{ steps.extract_ticket.outputs.ticket_number }}/${{ steps.create.outputs.issue }} was created"
+        run: echo "Jira Issue ${{ steps.issue-parser.outputs.issueparser_parent }}/${{ steps.create.outputs.issue }} was created"
 
       - name: Checkout develop code
         uses: actions/checkout@v4
