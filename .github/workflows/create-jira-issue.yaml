@@ -34,7 +34,7 @@ jobs:
       - name: Extract __ticket_number
         id: extract_ticket
         run: |
-          ticket_number=$(echo "${{ steps.issue-parser.outputs.jsonString }}" | jq -r '.__ticket_number')
+          ticket_number=$(echo "${{ steps.issue-parser.outputs.jsonString }}" | jq -r '.["__ticket_number"]')
           echo "::set-output name=ticket_number::$ticket_number"
 
 
