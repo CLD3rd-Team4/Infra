@@ -31,10 +31,15 @@ jobs:
         run: |
           echo '${{ steps.issue-parser.outputs.jsonString }}'
 
-      - name: Extract __ticket_number
-        id: extract_ticket
+      - name: Save JSON to file
         run: |
-          ticket_number=$(echo "${{ steps.issue-parser.outputs.jsonString }}" | jq -r 'fromjson | .["__ticket_number"]')
+          echo "${{ steps.issue-parser.outputs.jsonString }}" > output.json
+        env:
+          JSON_STRING: ${{ steps.issue-parser.outputs.jsonString }}
+      
+      - name: Extract __ticket_number
+        run: |
+          ticket_number=$(jq -r '.__ticket_number' output.json)
           echo "::set-output name=ticket_number::$ticket_number"
 
 
