@@ -67,6 +67,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: dev
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # Jira 컨벤션에 맞추어 브랜치명을 '[TICKET_NUMBER]BRANCH_NAME'로 생성
       - name: Create branch with Ticket number
