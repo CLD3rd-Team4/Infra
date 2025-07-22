@@ -11,8 +11,7 @@ variable "service_domain" {
 }
 
 locals {
-  common_prefix = "mapzip-${terraform.workspace}-"
-  common_tags  = {
+  common_tags = {
     Environment = terraform.workspace
     Project     = "mapzip"
     ManagedBy   = "Terraform"
