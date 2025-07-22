@@ -9,3 +9,12 @@ variable "service_domain" {
   type        = string
   default     = "mapzip.shop"
 }
+
+variable "common_tags" {
+  type = map(string)
+  default = {
+    Environment = terraform.workspace
+    Project     = "mapzip"
+    ManagedBy   = "Terraform"
+  }
+}
