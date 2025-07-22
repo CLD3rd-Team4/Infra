@@ -22,6 +22,7 @@ provider "aws" {
   region = "ap-northeast-2"
 }
 
+/*
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_name
 }
@@ -43,3 +44,4 @@ provider "helm" {
     token                  = data.aws_eks_cluster_auth.cluster.token
   }
 }
+*/
