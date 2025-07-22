@@ -73,18 +73,4 @@ module "s3_website_bucket" {
   bucket_name = "website" # "mapzip-{env}-website" 형태로 생성됨
 }
 
-# ------------------------------------------------------------------------------
-# EKS 모듈 호출
-# - modules/eks 디렉토리의 모듈을 사용하여 EKS 클러스터를 생성합니다.
-# ------------------------------------------------------------------------------
-module "eks" {
-  source = "./modules/eks"
 
-  # --- 공통 변수 전달 ---
-  environment = terraform.workspace
-  common_tags = local.common_tags
-  
-  # --- 네트워크 변수 전달 (외부에서 값 주입 필요) ---
-  vpc_id             = var.vpc_id
-  private_subnet_ids = var.private_subnet_ids
-}
