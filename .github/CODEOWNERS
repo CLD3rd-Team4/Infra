@@ -1,0 +1,19 @@
+# 팀원 이름
+# 박시윤 @siiiirru
+# 한동연 @1dyn
+# 양정모 @kaiju782
+# 서예은 @michelle259
+# 조성민 @csm123455
+# 조성욱 @KingZuto
+
+# 특정 디렉토리 오너
+/terraform/modules/eks/ @1dyn
+/terraform/k8s_helm.tf @siiiirru
+/terraform/modules/dynamodb/ @csm123455
+/terraform/modules/aurora/ @kaiju782
+/terraform/modules/s3/ @kaiju782
+/terraform/modules/network/ @KingZuto
+
+
+# 특정 파일 오너
+# /.github/workflows/deploy.yml @devops-lead
