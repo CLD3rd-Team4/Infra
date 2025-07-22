@@ -26,7 +26,7 @@ module "aurora_db" {
   source = "./modules/aurora"
 
   # --- 공통 변수 전달 ---
-  environment = terraform.workspace
+  common_prefix = local.common_prefix
   common_tags = local.common_tags
 
   # --- 네트워크 변수 전달 (외부에서 값 주입 필요) ---
@@ -36,10 +36,11 @@ module "aurora_db" {
   availability_zones          = var.availability_zones
 
   # --- DB 사양 및 계정 정보 전달 (외부에서 값 주입 필요) ---
-  instance_class = "db.t3.medium" # 요구사항에 명시된 기본값
+  instance_class = var.db_instance_class
   db_name        = var.db_name
   db_username    = var.db_username
   db_password    = var.db_password
+  instance_count = var.instance_count
 }
 
 # ------------------------------------------------------------------------------
@@ -50,7 +51,7 @@ module "s3_image_bucket" {
   source = "./modules/s3"
 
   # --- 공통 변수 전달 ---
-  environment = terraform.workspace
+  common_prefix = local.common_prefix
   common_tags = local.common_tags
 
   # --- S3 버킷 설정 ---
@@ -66,11 +67,10 @@ module "s3_website_bucket" {
   source = "./modules/s3"
 
   # --- 공통 변수 전달 ---
-  environment = terraform.workspace
+  common_prefix = local.common_prefix
   common_tags = local.common_tags
 
   # --- S3 버킷 설정 ---
   bucket_name = "website" # "mapzip-{env}-website" 형태로 생성됨
+  is_public   = true
 }
-
-

@@ -4,15 +4,17 @@
 # 공통 변수
 # - 루트 모듈에서 terraform.workspace와 공통 태그를 주입받습니다.
 # ------------------------------------------------------------------------------
-variable "environment" {
-  description = "배포 환경 (e.g., dev, stg, prod)"
-  type        = string
-}
+
 
 variable "common_tags" {
   description = "모든 리소스에 적용될 공통 태그"
   type        = map(string)
   default     = {}
+}
+
+variable "common_prefix" {
+  description = "리소스 이름에 사용할 공통 접두사"
+  type        = string
 }
 
 # ------------------------------------------------------------------------------
@@ -46,6 +48,12 @@ variable "instance_class" {
   description = "DB 인스턴스의 클래스 (e.g., db.t3.medium)"
   type        = string
   default     = "db.t3.medium"
+}
+
+variable "instance_count" {
+  description = "생성할 DB 인스턴스의 개수"
+  type        = number
+  default     = 1
 }
 
 # ------------------------------------------------------------------------------

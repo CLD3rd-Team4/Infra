@@ -64,6 +64,18 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "db_instance_class" {
+  description = "DB 인스턴스의 클래스"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+variable "instance_count" {
+  description = "생성할 DB 인스턴스의 개수"
+  type        = number
+  default     = 1
+}
+
 variable "service_name" {
   description = "The name of the service to be created in EKS"
   type        = string

@@ -9,13 +9,14 @@
 resource "aws_s3_bucket" "this" {
   # --- 네이밍 ---
   # 버킷 이름은 전역적으로 고유해야 하므로, 환경과 이름을 조합하여 생성합니다.
-  bucket = "mapzip-${var.environment}-${var.bucket_name}"
+  bucket = "${var.common_prefix}${var.bucket_name}"
+  force_destroy = true
 
   # --- 태그 ---
   tags = merge(
     var.common_tags,
     {
-      Name = "mapzip-${var.environment}-${var.bucket_name}"
+      Name = "${var.common_prefix}${var.bucket_name}"
     }
   )
 }
@@ -71,11 +72,10 @@ resource "aws_s3_bucket_versioning" "this" {
 }
 
 # ------------------------------------------------------------------------------
-# S3 정적 웹 호스팅 (주석 처리)
-# - 필요 시 아래 주석을 해제하여 사용할 수 있습니다.
+# S3 정적 웹 호스팅
 # ------------------------------------------------------------------------------
-/*
 resource "aws_s3_bucket_website_configuration" "this" {
+  count = var.is_public ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   index_document {
@@ -86,4 +86,3 @@ resource "aws_s3_bucket_website_configuration" "this" {
     key = "error.html"
   }
 }
-*/

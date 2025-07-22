@@ -8,7 +8,7 @@
 # ------------------------------------------------------------------------------
 resource "aws_rds_cluster" "aurora_cluster" {
   # --- 기본 설정 ---
-  cluster_identifier      = "mapzip-${var.environment}-db"
+  cluster_identifier      = "${var.common_prefix}db"
   engine                  = "aurora-postgresql"
   engine_mode             = "provisioned"
   database_name           = var.db_name
@@ -29,7 +29,7 @@ resource "aws_rds_cluster" "aurora_cluster" {
   tags = merge(
     var.common_tags,
     {
-      Name = "mapzip-${var.environment}-db-cluster"
+      Name = "${var.common_prefix}db-cluster"
     }
   )
 }
@@ -39,8 +39,8 @@ resource "aws_rds_cluster" "aurora_cluster" {
 # - 지정된 인스턴스 클래스 사용
 # ------------------------------------------------------------------------------
 resource "aws_rds_cluster_instance" "aurora_instance" {
-  count               = 1 # 필요에 따라 인스턴스 개수 조절
-  identifier          = "mapzip-${var.environment}-db-instance-${count.index}"
+  count               = var.instance_count
+  identifier          = "${var.common_prefix}db-instance-${count.index}"
   cluster_identifier  = aws_rds_cluster.aurora_cluster.id
   instance_class      = var.instance_class
   engine              = aws_rds_cluster.aurora_cluster.engine
@@ -50,7 +50,7 @@ resource "aws_rds_cluster_instance" "aurora_instance" {
   tags = merge(
     var.common_tags,
     {
-      Name = "mapzip-${var.environment}-db-instance"
+      Name = "${var.common_prefix}db-instance"
     }
   )
 }
@@ -60,10 +60,10 @@ resource "aws_rds_cluster_instance" "aurora_instance" {
 # - 지정된 프라이빗 서브넷에 DB 클러스터를 배치
 # ------------------------------------------------------------------------------
 resource "aws_db_subnet_group" "aurora_subnet_group" {
-  name       = "mapzip-${var.environment}-db-subnet-group"
+  name       = "${var.common_prefix}db-subnet-group"
   subnet_ids = var.private_subnet_ids
 
   tags = {
-    Name = "mapzip-${var.environment}-db-subnet-group"
+    Name = "${var.common_prefix}db-subnet-group"
   }
 }
