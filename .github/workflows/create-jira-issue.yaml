@@ -74,12 +74,12 @@ jobs:
           ref: dev
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Jira 컨벤션에 맞추어 브랜치명을 '[TICKET_NUMBER]BRANCH_NAME'로 생성
+      # Jira 컨벤션에 맞추어 브랜치명을 'TICKET_NUMBER-BRANCH_NAME'로 생성
       - name: Create branch with Ticket number
         run: |
           ISSUE_NUMBER="${{ steps.create.outputs.issue }}"
           ISSUE_TITLE="${{ steps.issue-parser.outputs.issueparser_branch}}"
-          BRANCH_NAME="[${ISSUE_NUMBER}]$(echo ${ISSUE_TITLE} | sed 's/ /-/g')"
+          BRANCH_NAME="${ISSUE_NUMBER}-$(echo ${ISSUE_TITLE} | sed 's/ /-/g')"
           git checkout -b "${BRANCH_NAME}"
           git push origin "${BRANCH_NAME}"
 
