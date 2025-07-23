@@ -118,3 +118,23 @@ output "private_route_table_associations" {
   description = "Private route table associations"
   value       = module.private_route_table.route_table_associations
 }
+
+output "dynamodb_table_name" {
+  description = "The name of the DynamoDB reviews table"
+  value       = module.dynamodb.dynamodb_table_name
+}
+
+output "dynamodb_table_arn" {
+  description = "The ARN of the DynamoDB reviews table"
+  value       = module.dynamodb.dynamodb_table_arn
+}
+
+output "elasticache_cluster_id" {
+  description = "The ID of the ElastiCache cluster"
+  value       = module.elasticache.elasticache_cluster_id
+}
+
+output "elasticache_cluster_endpoint" {
+  description = "The endpoint of the ElastiCache cluster"
+  value       = module.elasticache.elasticache_cluster_endpoint
+}
