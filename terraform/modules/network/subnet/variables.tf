@@ -1,35 +1,13 @@
-variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
+variable "subnets" {
+  description = "List of subnets to create"
+  type = list(object({
+    name                  = string
+    cidr_block            = string
+    availability_zone     = string
+    map_public_ip_on_launch = bool
+    type                  = optional(string, "private") # 'public' or 'private', default is 'private'
+  }))
 }
-
-variable "cidr_block" {
-  description = "Subnet CIDR block"
-  type        = string
-}
-
-variable "availability_zone" {
-  description = "AZ"
-  type        = string
-}
-
-variable "map_public_ip_on_launch" {
-  description = "퍼블릭 서브넷 여부"
-  type        = bool
-  default     = false
-}
-
-variable "name" {
-  description = "서브넷 이름"
-  type        = string
-}
-
-variable "common_prefix" {
-  description = "공통 prefix"
-  type        = string
-}
-
-variable "common_tags" {
-  description = "공통 태그"
-  type        = map(string)
-} 
+variable "vpc_id" { type = string }
+variable "common_prefix" { type = string }
+variable "common_tags" { type = map(string) } 

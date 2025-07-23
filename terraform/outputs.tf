@@ -1,57 +1,80 @@
+# VPC
 output "vpc_id" {
-  value = module.vpc.vpc_id
+  description = "VPC ID"
+  value       = module.vpc.vpc_id
 }
 
+# Public Subnets
+output "public_subnet_ids" {
+  description = "Public subnet IDs"
+  value       = module.public_subnets.subnet_ids
+}
+
+output "public_subnet_ids_by_az" {
+  description = "Public subnet IDs grouped by availability zone"
+  value       = module.public_subnets.subnet_ids_by_az
+}
+
+output "public_subnet_ids_by_name" {
+  description = "Public subnet IDs mapped by subnet name"
+  value       = module.public_subnets.subnet_ids_by_name
+}
+
+# Private Subnets
+output "private_subnet_ids" {
+  description = "Private subnet IDs"
+  value       = module.private_subnets.subnet_ids
+}
+
+output "private_subnet_ids_by_az" {
+  description = "Private subnet IDs grouped by availability zone"
+  value       = module.private_subnets.subnet_ids_by_az
+}
+
+output "private_subnet_ids_by_name" {
+  description = "Private subnet IDs mapped by subnet name"
+  value       = module.private_subnets.subnet_ids_by_name
+}
+
+# Internet Gateway
+output "igw_id" {
+  description = "Internet Gateway ID"
+  value       = module.igw.igw_id
+}
+
+# NAT Gateway
+output "natgw_id" {
+  description = "NAT Gateway ID"
+  value       = module.natgw.natgw_id
+}
+
+# Route Tables
 output "public_route_table_id" {
-  value = aws_route_table.public.id
-}
-
-output "private_route_table_id" {
-  value = aws_route_table.private.id
+  description = "Public route table ID"
+  value       = module.public_route_table.route_table_id
 }
 
 output "public_route_id" {
-  value = aws_route.public_internet_access.id
+  description = "Public route ID"
+  value       = module.public_route_table.route_id
+}
+
+output "public_route_table_associations" {
+  description = "Public route table associations"
+  value       = module.public_route_table.route_table_associations
+}
+
+output "private_route_table_id" {
+  description = "Private route table ID"
+  value       = module.private_route_table.route_table_id
 }
 
 output "private_route_id" {
-  value = aws_route.private_natgw_access.id
+  description = "Private route ID"
+  value       = module.private_route_table.route_id
 }
 
-output "subnet_public_1a_id" {
-  value = module.subnet_public_1a.id
-}
-output "subnet_public_2c_id" {
-  value = module.subnet_public_2c.id
-}
-output "subnet_private_1a_1_id" {
-  value = module.subnet_private_1a_1.id
-}
-output "subnet_private_1a_2_id" {
-  value = module.subnet_private_1a_2.id
-}
-output "subnet_private_2c_1_id" {
-  value = module.subnet_private_2c_1.id
-}
-output "subnet_private_2c_2_id" {
-  value = module.subnet_private_2c_2.id
-}
-
-output "public_route_table_association_1a_id" {
-  value = aws_route_table_association.public_1a.id
-}
-output "public_route_table_association_2c_id" {
-  value = aws_route_table_association.public_2c.id
-}
-output "private_route_table_association_1a_1_id" {
-  value = aws_route_table_association.private_1a_1.id
-}
-output "private_route_table_association_1a_2_id" {
-  value = aws_route_table_association.private_1a_2.id
-}
-output "private_route_table_association_2c_1_id" {
-  value = aws_route_table_association.private_2c_1.id
-}
-output "private_route_table_association_2c_2_id" {
-  value = aws_route_table_association.private_2c_2.id
+output "private_route_table_associations" {
+  description = "Private route table associations"
+  value       = module.private_route_table.route_table_associations
 }
