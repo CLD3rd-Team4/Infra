@@ -21,6 +21,10 @@ terraform {
 provider "aws" {
   region = "ap-northeast-2"
 }
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
 
 # --- EKS 관련 설정: eks 모듈이 없으므로 임시로 주석 처리 ---
 # data "aws_eks_cluster" "cluster" {
