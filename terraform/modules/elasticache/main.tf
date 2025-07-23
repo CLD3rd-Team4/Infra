@@ -3,7 +3,7 @@ resource "aws_elasticache_cluster" "this" {
   cluster_id           = "mapzip-${var.environment}-${var.cluster_name}"
 
   engine               = "redis"
-  node_type            = "cache.t3.micro"
+  node_type            = "cache.t3.medium"
   num_cache_nodes      = 1
   parameter_group_name = "default.redis7"
   port                 = 6379
