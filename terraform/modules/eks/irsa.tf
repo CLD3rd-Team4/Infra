@@ -73,7 +73,7 @@ data "aws_iam_policy_document" "cluster_autoscaler_assume_role" {
 
 resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
   role       = aws_iam_role.alb_irsa.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSLoadBalancerControllerIAMPolicy"
+  policy_arn = aws_iam_policy.aws_load_balancer_controller.arn
 }
 
 resource "aws_iam_role_policy_attachment" "external_dns_attach" {
