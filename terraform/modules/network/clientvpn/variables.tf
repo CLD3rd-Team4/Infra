@@ -10,7 +10,7 @@ variable "server_certificate_arn" {
 }
 
 variable "root_certificate_chain_arn" {
-  description = "클라이언트 인증 루트 CA ARN"
+  description = "클라이언트 인증서 ARN"
   type        = string
 }
 
@@ -24,6 +24,16 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "vpc_cidr" {
+  description = "VPC CIDR 블록"
+  type        = string
+}
+
+variable "subnet_ids" {
+  description = "Client VPN과 연결할 서브넷 ID 목록"
+  type        = list(string)
+}
+
 variable "common_prefix" {
   description = "공통 prefix"
   type        = string
@@ -32,4 +42,4 @@ variable "common_prefix" {
 variable "common_tags" {
   description = "공통 태그"
   type        = map(string)
-} 
+}
