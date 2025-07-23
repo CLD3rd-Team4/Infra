@@ -8,6 +8,7 @@
 
 # 특정 디렉토리 오너
 /terraform/modules/eks/ @1dyn
+/terraform/modules/iam/ @1dyn
 /terraform/k8s_helm.tf @siiiirru
 /terraform/modules/dynamodb/ @csm123455
 /terraform/modules/aurora/ @kaiju782
