@@ -31,11 +31,6 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-variable "allowed_security_group_id" {
-  description = "DB 클러스터에 적용할 보안 그룹 ID"
-  type        = string
-}
-
 variable "availability_zones" {
   description = "DB 클러스터를 배치할 가용 영역(AZ) 목록"
   type        = list(string)
@@ -60,19 +55,15 @@ variable "instance_count" {
 # DB 정보 관련 변수
 # - TODO: 추후 SecretsManager와 연동하여 관리해야 합니다.
 # ------------------------------------------------------------------------------
-variable "db_name" {
-  description = "생성할 데이터베이스의 이름"
-  type        = string
-  sensitive   = true
-}
 
-variable "db_username" {
+
+variable "db_master_username" {
   description = "데이터베이스 마스터 사용자 이름"
   type        = string
   sensitive   = true
 }
 
-variable "db_password" {
+variable "db_master_password" {
   description = "데이터베이스 마스터 사용자 비밀번호"
   type        = string
   sensitive   = true

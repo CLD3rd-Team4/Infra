@@ -1,28 +1,67 @@
-# Aurora (PostgreSQL) 클러스터 생성
+
 
 # ------------------------------------------------------------------------------
-# RDS 클러스터
-# - aurora-postgresql 엔진 사용
-# - 다중 AZ(Multi-AZ) 활성화로 가용성 확보
-# - 삭제 방지(deletion_protection) 활성화로 운영 안정성 확보
+# VPC 데이터 소스
+# - VPC ID를 사용하여 VPC의 상세 정보(예: CIDR 블록)를 가져옵니다.
 # ------------------------------------------------------------------------------
-resource "aws_rds_cluster" "aurora_cluster" {
+data "aws_vpc" "selected" {
+  id = var.vpc_id
+}
+
+# ------------------------------------------------------------------------------
+# Aurora DB 클러스터용 보안 그룹
+# - DB 클러스터에 대한 네트워크 접근을 제어합니다.
+# ------------------------------------------------------------------------------
+resource "aws_security_group" "this" {
+  name        = "${var.common_prefix}db-sg"
+  description = "Security group for the Aurora DB cluster"
+  vpc_id      = var.vpc_id
+
+  # 인바운드 규칙: VPC 내부에서 PostgreSQL(5432) 포트로의 접근 허용
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [data.aws_vpc.selected.cidr_block]
+    description = "Allow PostgreSQL access from within the VPC"
+  }
+
+  # 아웃바운드 규칙: 모든 외부 통신 허용
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.common_prefix}db-sg"
+    }
+  )
+}
+
+
+# ------------------------------------------------------------------------------
+# Aurora (PostgreSQL) 클러스터 생성
+# ------------------------------------------------------------------------------
+resource "aws_rds_cluster" "this" {
   # --- 기본 설정 ---
   cluster_identifier      = "${var.common_prefix}db"
   engine                  = "aurora-postgresql"
   engine_mode             = "provisioned"
-  database_name           = var.db_name
-  master_username         = var.db_username
-  master_password         = var.db_password # TODO: SecretsManager 연동 예정
+  master_username         = var.db_master_username
+  master_password         = var.db_master_password
   port                    = 5432
 
   # --- 네트워크 및 보안 ---
-  db_subnet_group_name    = aws_db_subnet_group.aurora_subnet_group.name
-  vpc_security_group_ids  = [var.allowed_security_group_id]
+  db_subnet_group_name    = aws_db_subnet_group.this.name
+  vpc_security_group_ids  = [aws_security_group.this.id]
 
   # --- 운영 및 관리 ---
   availability_zones      = var.availability_zones
-  skip_final_snapshot     = true # 실 운영에서는 false 권장
+  skip_final_snapshot     = true
   deletion_protection     = true
 
   # --- 태그 ---
@@ -34,19 +73,14 @@ resource "aws_rds_cluster" "aurora_cluster" {
   )
 }
 
-# ------------------------------------------------------------------------------
-# RDS 클러스터 인스턴스
-# - 지정된 인스턴스 클래스 사용
-# ------------------------------------------------------------------------------
-resource "aws_rds_cluster_instance" "aurora_instance" {
+resource "aws_rds_cluster_instance" "this" {
   count               = var.instance_count
   identifier          = "${var.common_prefix}db-instance-${count.index}"
-  cluster_identifier  = aws_rds_cluster.aurora_cluster.id
+  cluster_identifier  = aws_rds_cluster.this.id
   instance_class      = var.instance_class
-  engine              = aws_rds_cluster.aurora_cluster.engine
-  engine_version      = aws_rds_cluster.aurora_cluster.engine_version
+  engine              = aws_rds_cluster.this.engine
+  engine_version      = aws_rds_cluster.this.engine_version
 
-  # --- 태그 ---
   tags = merge(
     var.common_tags,
     {
@@ -55,11 +89,7 @@ resource "aws_rds_cluster_instance" "aurora_instance" {
   )
 }
 
-# ------------------------------------------------------------------------------
-# DB 서브넷 그룹
-# - 지정된 프라이빗 서브넷에 DB 클러스터를 배치
-# ------------------------------------------------------------------------------
-resource "aws_db_subnet_group" "aurora_subnet_group" {
+resource "aws_db_subnet_group" "this" {
   name       = "${var.common_prefix}db-subnet-group"
   subnet_ids = var.private_subnet_ids
 
