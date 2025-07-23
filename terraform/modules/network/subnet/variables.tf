@@ -1,13 +1,32 @@
+variable "vpc_id" {
+  description = "VPC ID"
+  type        = string
+}
+
 variable "subnets" {
-  description = "List of subnets to create"
+  description = "List of subnet configurations"
   type = list(object({
-    name                  = string
-    cidr_block            = string
-    availability_zone     = string
-    map_public_ip_on_launch = bool
-    type                  = optional(string, "private") # 'public' or 'private', default is 'private'
+    name              = string
+    cidr_block        = string
+    availability_zone = string
   }))
 }
-variable "vpc_id" { type = string }
-variable "common_prefix" { type = string }
-variable "common_tags" { type = map(string) } 
+
+variable "subnet_type" {
+  description = "Type of subnet (public or private)"
+  type        = string
+  validation {
+    condition     = contains(["public", "private"], var.subnet_type)
+    error_message = "Subnet type must be either 'public' or 'private'."
+  }
+}
+
+variable "common_prefix" {
+  description = "Common prefix for all resources"
+  type        = string
+}
+
+variable "common_tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+}
