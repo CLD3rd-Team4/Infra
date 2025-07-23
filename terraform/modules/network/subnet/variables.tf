@@ -3,33 +3,30 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "cidr_block" {
-  description = "Subnet CIDR block"
-  type        = string
+variable "subnets" {
+  description = "List of subnet configurations"
+  type = list(object({
+    name              = string
+    cidr_block        = string
+    availability_zone = string
+  }))
 }
 
-variable "availability_zone" {
-  description = "AZ"
+variable "subnet_type" {
+  description = "Type of subnet (public or private)"
   type        = string
-}
-
-variable "map_public_ip_on_launch" {
-  description = "퍼블릭 서브넷 여부"
-  type        = bool
-  default     = false
-}
-
-variable "name" {
-  description = "서브넷 이름"
-  type        = string
+  validation {
+    condition     = contains(["public", "private"], var.subnet_type)
+    error_message = "Subnet type must be either 'public' or 'private'."
+  }
 }
 
 variable "common_prefix" {
-  description = "공통 prefix"
+  description = "Common prefix for all resources"
   type        = string
 }
 
 variable "common_tags" {
-  description = "공통 태그"
+  description = "Common tags for all resources"
   type        = map(string)
-} 
+}
