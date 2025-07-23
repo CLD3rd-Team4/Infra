@@ -1,6 +1,6 @@
 resource "aws_elasticache_cluster" "this" {
   # --- 네이밍 ---
-  cluster_id           = "${var.name_prefix}-${var.environment}-${var.cluster_name}"
+  cluster_id           = "${var.name_prefix}${var.cluster_name}"
 
   engine               = "redis"
   node_type            = "cache.t3.medium"

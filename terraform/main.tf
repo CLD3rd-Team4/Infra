@@ -191,7 +191,7 @@ module "elasticache" {
 }
 
 resource "aws_elasticache_subnet_group" "main" {
-  name        = "mapzip-${terraform.workspace}-elasticache-subnet-group"
+  name        = "${local.common_prefix}elasticache-subnet-group"
   subnet_ids  = module.private_subnets.subnet_ids
   description = "ElastiCache subnet group for Mapzip"
 
@@ -204,7 +204,7 @@ resource "aws_elasticache_subnet_group" "main" {
 }
 
 resource "aws_security_group" "elasticache_sg" {
-  name        = "mapzip-${terraform.workspace}-elasticache-sg"
+  name        = "${local.common_prefix}elasticache-sg"
   description = "Allow inbound traffic to ElastiCache"
   vpc_id      = module.vpc.vpc_id
 
@@ -244,7 +244,7 @@ module "msk" {
 }
 
 resource "aws_security_group" "msk_sg" {
-  name        = "${local.common_prefix}-${terraform.workspace}-msk-sg"
+  name        = "${local.common_prefix}${terraform.workspace}-msk-sg"
   description = "Allow inbound traffic to MSK"
   vpc_id      = module.vpc.vpc_id
 

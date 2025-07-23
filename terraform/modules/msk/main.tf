@@ -1,5 +1,5 @@
 resource "aws_msk_cluster" "this" {
-  cluster_name           = "${var.name_prefix}-${var.environment}-${var.cluster_name}"
+  cluster_name           = "${var.name_prefix}${var.cluster_name}"
   kafka_version          = "2.8.1"
   number_of_broker_nodes = var.number_of_broker_nodes
 
