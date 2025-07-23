@@ -1,6 +1,6 @@
 resource "aws_dynamodb_table" "this" {
   # --- 네이밍 ---
-  name           = "mapzip-${var.environment}-${var.table_name}"
+  name           = "${var.name_prefix}-${var.environment}-${var.table_name}"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "restaurant_id"
   range_key      = "review_id"
