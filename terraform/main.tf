@@ -1,12 +1,3 @@
-locals {
-  common_prefix = "mapzip-${terraform.workspace}-"
-  common_tags = {
-    Environment = terraform.workspace
-    Project     = "mapzip"
-    ManagedBy   = "Terraform"
-  }
-}
-
 module "vpc" {
   source       = "./modules/network/vpc"
   cidr_block   = "10.0.0.0/16"
