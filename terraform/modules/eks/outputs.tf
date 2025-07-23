@@ -27,6 +27,9 @@ output "oidc_provider_url" {
 }
 
 output "cluster_autoscaler_irsa_role_arn" {
-  description = "IAM Role ARN for Cluster Autoscaler IRSA"
   value       = aws_iam_role.cluster_autoscaler_irsa.arn
+}
+
+output "eks_cluster_security_group_id" {
+  value       = aws_security_group.eks_cluster.id
 }
