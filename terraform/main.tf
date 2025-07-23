@@ -171,4 +171,103 @@ module "iam" {
   source = "./modules/iam"
   common_prefix  = local.common_prefix
   common_tags    = local.common_tags
+
+}
+
+module "dynamodb" {
+  source       = "./modules/dynamodb"
+  name_prefix  = local.common_prefix
+  environment  = terraform.workspace
+  table_name   = "reviews"
+  common_tags  = local.common_tags
+}
+
+module "elasticache" {
+  source                        = "./modules/elasticache"
+  name_prefix                   = local.common_prefix
+  environment                   = terraform.workspace
+  cluster_name                  = "session-cache"
+  common_tags                   = local.common_tags
+  elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
+  security_group_ids            = [aws_security_group.elasticache_sg.id]
+}
+
+resource "aws_elasticache_subnet_group" "main" {
+  name        = "${local.common_prefix}elasticache-subnet-group"
+  subnet_ids  = module.private_subnets.subnet_ids
+  description = "ElastiCache subnet group for Mapzip"
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "mapzip-${terraform.workspace}-elasticache-subnet-group"
+    }
+  )
+}
+
+resource "aws_security_group" "elasticache_sg" {
+  name        = "${local.common_prefix}elasticache-sg"
+  description = "Allow inbound traffic to ElastiCache"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    cidr_blocks = [module.vpc.vpc_cidr_block] # module.vpc의 cidr_block 변수 참조
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "mapzip-${terraform.workspace}-elasticache-sg"
+    }
+  )
+}
+
+module "msk" {
+  source                 = "./modules/msk"
+  name_prefix            = local.common_prefix
+  environment            = terraform.workspace
+  cluster_name           = "main"
+  number_of_broker_nodes = 2
+  instance_type          = "kafka.t3.small"
+  ebs_volume_size        = 100
+  vpc_subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids     = [aws_security_group.msk_sg.id]
+  common_tags            = local.common_tags
+}
+
+resource "aws_security_group" "msk_sg" {
+  name        = "${local.common_prefix}${terraform.workspace}-msk-sg"
+  description = "Allow inbound traffic to MSK"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 9092 # Kafka plaintext port
+    to_port     = 9092
+    protocol    = "tcp"
+    cidr_blocks = [module.vpc.vpc_cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.common_prefix}-${terraform.workspace}-msk-sg"
+    }
+  )
 }
