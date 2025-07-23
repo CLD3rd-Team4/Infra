@@ -1,0 +1,24 @@
+resource "aws_msk_cluster" "this" {
+  cluster_name           = "mapzip-${var.environment}-${var.cluster_name}"
+  kafka_version          = "2.8.1"
+  number_of_broker_nodes = var.number_of_broker_nodes
+
+  broker_node_group_info {
+    instance_type = var.instance_type
+    client_subnets = var.vpc_subnet_ids
+    security_groups = var.security_group_ids
+
+    storage_info {
+      ebs_storage_info {
+        volume_size = var.ebs_volume_size
+      }
+    }
+  }
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "mapzip-${var.environment}-${var.cluster_name}"
+    }
+  )
+}
