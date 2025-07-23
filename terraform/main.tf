@@ -113,6 +113,15 @@ module "acm_backend" {
   common_tags               = local.common_tags
   route53_zone_id           = module.route53.zone_id
 }
+module "acm_image" {
+  source                    = "./modules/acm"
+  providers                 = { aws = aws.us_east_1 }
+  domain_name               = "img.mapzip.shop"
+  route53_zone_id           = module.route53.zone_id
+  common_prefix             = local.common_prefix
+  common_tags               = local.common_tags
+}
+
 
 module "ecr_backend" {
   source        = "./modules/ecr"
