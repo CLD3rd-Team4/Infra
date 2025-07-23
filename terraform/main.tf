@@ -20,9 +20,9 @@ module "public_subnets" {
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
   subnets = [
-    { name = "public-1", cidr_block = "10.0.1.0/24", availability_zone = "ap-northeast-2a" },
-    { name = "public-2", cidr_block = "10.0.2.0/24", availability_zone = "ap-northeast-2b" },
-    { name = "public-3", cidr_block = "10.0.3.0/24", availability_zone = "ap-northeast-2c" }
+    { name = "public-1", cidr_block = "10.0.4.0/24", availability_zone = "ap-northeast-2a" },
+    { name = "public-2", cidr_block = "10.0.5.0/24", availability_zone = "ap-northeast-2b" },
+    { name = "public-3", cidr_block = "10.0.6.0/24", availability_zone = "ap-northeast-2c" }
   ]
 }
 
@@ -34,9 +34,9 @@ module "private_subnets" {
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
   subnets = [
-    { name = "private-1", cidr_block = "10.0.10.0/24", availability_zone = "ap-northeast-2a" },
-    { name = "private-2", cidr_block = "10.0.11.0/24", availability_zone = "ap-northeast-2b" },
-    { name = "private-3", cidr_block = "10.0.12.0/24", availability_zone = "ap-northeast-2c" }
+    { name = "private-1", cidr_block = "10.0.14.0/24", availability_zone = "ap-northeast-2a" },
+    { name = "private-2", cidr_block = "10.0.15.0/24", availability_zone = "ap-northeast-2b" },
+    { name = "private-3", cidr_block = "10.0.16.0/24", availability_zone = "ap-northeast-2c" }
   ]
 }
 
