@@ -70,3 +70,19 @@ module "private_route_table" {
   common_prefix         = local.common_prefix
   common_tags           = local.common_tags
 }
+
+module "eks" {
+  source              = "./modules/eks"
+  cluster_name        = "mapzip-${terraform.workspace}-eks"
+  cluster_role_arn    = module.iam.eks_cluster_role_arn
+  node_group_role_arn = module.iam.eks_node_group_role_arn
+  subnet_ids          = module.private_subnets.subnet_ids
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+}
+
+module "iam" {
+  source = "./modules/iam"
+  common_prefix  = local.common_prefix
+  common_tags    = local.common_tags
+}
