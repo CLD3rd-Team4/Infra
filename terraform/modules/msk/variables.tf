@@ -16,7 +16,7 @@ variable "cluster_name" {
 variable "number_of_broker_nodes" {
   description = "Number of broker nodes in the MSK cluster"
   type        = number
-  default     = 2
+  default     = 3
 }
 
 variable "instance_type" {

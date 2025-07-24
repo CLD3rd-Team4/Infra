@@ -19,7 +19,7 @@ resource "aws_dynamodb_table" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "mapzip-${var.environment}-${var.table_name}"
+      Name = "${var.name_prefix}-${var.table_name}"
     }
   )
 }
