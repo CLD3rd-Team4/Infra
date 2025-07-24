@@ -240,6 +240,26 @@ module "eks" {
   common_tags   = local.common_tags
 }
 
+# Private CA 모듈
+module "privateca" {
+  source        = "./modules/network/privateca"
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+}
+
+# Client VPN 모듈
+module "client_vpn" {
+  source                    = "./modules/network/clientvpn"
+  vpc_id                    = module.vpc.vpc_id
+  vpc_cidr                 = module.vpc.vpc_cidr
+  subnet_ids               = module.private_subnets.subnet_ids
+  client_cidr_block        = "172.16.0.0/22"  # VPC CIDR과 겹치지 않는 범위
+  server_certificate_arn    = module.privateca.server_certificate_arn
+  root_certificate_chain_arn = module.privateca.client_certificate_arn
+  common_prefix            = local.common_prefix
+  common_tags              = local.common_tags
+  description             = "${local.common_prefix} Client VPN"
+}
 
 module "iam" {
   source = "./modules/iam"
