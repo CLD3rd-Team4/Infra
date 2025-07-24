@@ -1,107 +1,63 @@
-# Mapzip Terraform 프로젝트
+# 인프라 주요 변경 이력 (Aurora DB & S3 중심)
 
-## 1. 개요
+최근 인프라에 Aurora 데이터베이스와 S3 스토리지 모듈이 추가되고, 관련하여 `main.tf`의 병합 충돌을 해결하는 과정이 있었습니다. 이 문서는 해당 변경 사항에 대한 상세 설명과 팀원들이 유의해야 할 점을 정리합니다.
 
-이 프로젝트는 Mapzip 서비스의 인프라를 Terraform으로 관리하기 위한 코드베이스입니다. 모든 리소스는 모듈화하여 재사용성을 높이고, `terraform.workspace`를 사용해 개발(dev), 스테이징(stg), 운영(prod) 환경을 구분합니다.
+---
 
-## 2. 프로젝트 구조
+### 1. Aurora DB 모듈 (`./modules/aurora`)
 
-```
-.
-├── README.md
-├── argocd
-│   └── ...
-└── terraform
-    ├── modules
-    │   ├── aurora  # Aurora (PostgreSQL) 모듈
-    │   │   ├── main.tf
-    │   │   ├── outputs.tf
-    │   │   └── variables.tf
-    │   └── s3      # S3 버킷 모듈
-    │       ├── main.tf
-    │       ├── outputs.tf
-    │       └── variables.tf
-    ├── backend.tf
-    ├── main.tf       # 루트 모듈 (모듈 호출)
-    ├── outputs.tf
-    ├── providers.tf
-    └── variables.tf
-```
+**1-1. 모듈의 역할**
+- AWS의 고가용성 관계형 데이터베이스 서비스인 Aurora (PostgreSQL 버전) 클러스터를 생성하고 관리합니다.
+- 물리적인 DB 서버(클러스터)와 인스턴스, 관련 네트워크 설정(보안 그룹, 서브넷 그룹)을 책임집니다.
 
-- **`main.tf`**: 각 모듈을 호출하여 전체 인프라를 구성합니다.
-- **`variables.tf`**: 전역적으로 사용되는 변수를 정의합니다. (VPC, Subnet ID 등)
-- **`outputs.tf`**: 생성된 리소스의 주요 정보를 출력합니다.
-- **`modules/`**: 각 리소스별 모듈이 위치합니다.
-  - **`aurora/`**: Aurora PostgreSQL 클러스터 모듈
-  - **`s3/`**: S3 버킷 모듈
+**1-2. 루트 모듈(`main.tf`)에서의 사용법**
+- `module "aurora_db"` 블록을 통해 이 모듈을 호출합니다.
+- 필요한 값들(VPC ID, Private Subnet ID 목록, DB 인스턴스 사양 등)을 변수로 전달받아 클러스터를 구성합니다.
 
-## 3. 공통 규칙
+**1-3. (중요) 데이터베이스 생성 방식 상세 설명**
+- **물리적 클러스터 vs 논리적 데이터베이스:**
+  - `aurora` 모듈은 데이터베이스 소프트웨어가 설치된 서버 그룹, 즉 **물리적인 DB 클러스터**만 생성합니다.
+  - 우리가 실제로 사용할 `mapzip_user`, `mapzip_post` 같은 **논리적인 데이터베이스**는 이 모듈이 직접 만들지 않습니다.
 
-### 네이밍 규칙
+- **논리적 데이터베이스는 누가 만드는가?**
+  - 루트 `main.tf`에 있는 `resource "postgresql_database" "dbs"` 코드가 이 역할을 수행합니다.
+  - 이 코드는 생성된 Aurora DB 클러스터에 접속해서, `CREATE DATABASE ...` 명령을 실행해주는 것과 같습니다.
 
-모든 리소스의 이름은 `mapzip-{환경명}-{리소스명}` 형식을 따릅니다. 환경명은 `terraform.workspace`를 통해 동적으로 결정됩니다.
+- **어떤 이름으로 만들어지는가?**
+  - `variables.tf`에 정의된 `variable "databases"`라는 맵(map) 변수를 사용합니다.
+  - 예를 들어, Terraform Cloud나 `.tfvars` 파일에 아래와 같이 변수를 설정하면:
+    ```tf
+    databases = {
+      "user" = { password = "..." },
+      "post" = { password = "..." }
+    }
+    ```
+  - `for_each` 루프가 `user`와 `post`라는 키(key)를 각각 순회하면서 `mapzip_user`, `mapzip_post` 라는 이름의 데이터베이스 2개를 생성해줍니다.
 
-```hcl
-locals {
-  common_prefix = "mapzip-${terraform.workspace}-"
-  common_tags = {
-    Environment = terraform.workspace
-    Project     = "mapzip"
-    ManagedBy   = "Terraform"
-  }
-}
-```
+---
 
-### 태그 관리
+### 2. S3 모듈 (`./modules/s3`)
 
-모든 리소스에는 `local.common_tags`에 정의된 공통 태그가 필수로 포함되어야 합니다.
+**2-1. 모듈의 역할**
+- AWS의 객체 스토리지 서비스인 S3 버킷을 생성하고 관리합니다.
+- 버킷 이름, 공개 여부, 정적 웹사이트 호스팅 기능 등을 설정할 수 있도록 만들어졌습니다.
 
-## 4. 사용법
+**2-2. 루트 모듈(`main.tf`)에서의 사용법**
+- 현재 두 가지 용도로 S3 모듈을 호출하고 있습니다.
+  1.  `module "s3_image_bucket"`: 이미지 파일을 저장하기 위한 **비공개(private)** 버킷을 생성합니다.
+  2.  `module "s3_website_bucket"`: 프론트엔드 빌드 결과물(HTML, JS, CSS)을 저장하고 외부에 서비스하기 위한 **공개(public)** 버킷을 생성합니다.
 
-### 환경 초기화
+**2-3. CloudFront 연동**
+- `cloudfront` 모듈과 `cloudfront_image` 모듈은 각각의 S3 버킷을 원본(Origin)으로 바라봅니다.
+- `main.tf`에서 S3 모듈의 출력 값인 `bucket_domain_name`을 CloudFront 모듈의 입력 변수로 전달하여 둘을 연결합니다.
+  - `s3_website_bucket` -> `cloudfront`
+  - `s3_image_bucket` -> `cloudfront_image`
 
-최초 실행 시 또는 새로운 환경(workspace)을 추가할 때 아래 명령어를 실행합니다.
+---
 
-```bash
-terraform init
-terraform workspace new dev
-```
+### 3. 팀원 유의사항 (필독)
 
-### 계획 및 적용
-
-Terraform 코드를 변경한 후에는 항상 `plan`을 통해 변경 사항을 확인하고 `apply`로 적용합니다.
-
-```bash
-# dev 환경에 대한 변경 계획 확인
-terraform plan -var-file="dev.tfvars"
-
-# dev 환경에 변경 사항 적용
-terraform apply -var-file="dev.tfvars"
-```
-
-**참고**: `dev.tfvars` 파일에는 VPC ID, Subnet ID 등 환경별 변수를 정의해야 합니다. 이 파일은 `.gitignore`에 추가하여 형상 관리에 포함되지 않도록 주의해야 합니다.
-
-## 5. 모듈 상세 설명
-
-### Aurora 모듈 (`modules/aurora`)
-
-- **기능**: `aurora-postgresql` 엔진을 사용하는 DB 클러스터를 생성합니다.
-- **주요 변수**:
-  - `vpc_id`: DB가 위치할 VPC ID
-  - `private_subnet_ids`: DB 클러스터가 사용할 Private Subnet ID 목록
-  - `allowed_security_group_id`: DB 접근을 허용할 보안 그룹 ID
-- **참고**: DB 이름, 계정, 비밀번호는 임시값을 사용하며, 추후 `SecretsManager`와 연동될 예정입니다.
-
-### S3 모듈 (`modules/s3`)
-
-- **기능**: 다용도 S3 버킷을 생성합니다.
-- **주요 변수**:
-  - `bucket_name`: 생성할 버킷의 기본 이름 (prefix가 추가됨)
-  - `is_public`: 버킷의 Public 접근 허용 여부 (기본값: `false`)
-- **참고**: 현재 모든 버킷은 비공개(private)로 설정되며, 버전 관리는 비활성화되어 있습니다.
-
-## 6. TODO
-
-- [ ] `SecretsManager`를 연동하여 DB 계정 정보 관리
-- [ ] S3 버킷 Public 접근 정책 구체화
-- [ ] EKS 클러스터 구성 및 `depends_on` 설정
+**3-1. `main.tf` 병합 충돌 해결**
+- 최근 `main.tf` 파일에 `eks`, `iam`, `route53`, `s3`, `aurora` 등 여러 모듈이 동시에 추가되면서 병합 충돌이 있었습니다.
+- 현재는 양쪽 브랜치의 변경 사항을 모두 반영하여 코드를 통합했으며, 모든 모듈이 정상적으로 포함되어 있습니다.
+- 특히 `eks` 모듈에 `vpc_id`와 `public_access_cidrs` 같은 필수 변수가 정확히 전달되도록 수정되었으니 참고 바랍니다.
