@@ -14,6 +14,11 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.38.0"
     }
+
+    postgresql = {
+      source  = "cyrilgdn/postgresql"
+      version = "1.22.0"
+    }
   }
   required_version = "~> 1.12.0"
 }
