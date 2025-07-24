@@ -45,10 +45,11 @@ module "natgw" {
 
 # ------------------------------------------------------------------------------
 # PostgreSQL 공급자 설정 (루트 모듈)
+# 여러 Aurora 클러스터 중 'recommend' DB에 연결하여 DB 및 역할 관리를 수행합니다.
 # ------------------------------------------------------------------------------
 provider "postgresql" {
   alias    = "aurora_root"
-  host     = module.aurora_db.aurora_cluster_endpoint
+  host     = module.aurora_dbs.aurora_cluster_endpoints["recommend"]
   port     = 5432
   username = var.db_master_username
   password = var.db_master_password
@@ -74,12 +75,15 @@ resource "postgresql_role" "users" {
   password = var.databases[each.key].password
 }
 
-module "aurora_db" {
+module "aurora_dbs" {
   source = "./modules/aurora"
 
   # --- 공통 변수 전달 ---
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
+
+  # --- 서비스별 클러스터 생성 ---
+  aurora_service_names = ["recommend", "schedule"]
 
   # --- 네트워크 변수 전달 (network 모듈 출력값 사용) ---
   vpc_id             = module.vpc.vpc_id
@@ -90,7 +94,6 @@ module "aurora_db" {
   instance_class     = var.db_instance_class
   db_master_username = var.db_master_username
   db_master_password = var.db_master_password
-  instance_count     = var.instance_count
 }
 
 module "s3_image_bucket" {
