@@ -41,45 +41,7 @@ module "natgw" {
   common_tags   = local.common_tags
 }
 
-module "public_route_table" {
-  source                  = "./modules/network/route_table"
-  vpc_id                  = module.vpc.vpc_id
-  name                    = "public-rtb"
-  default_route_target_id = module.igw.igw_id
-  target_type             = "igw"
-  subnet_ids              = module.public_subnets.subnet_ids
-  common_prefix           = local.common_prefix
-  common_tags             = local.common_tags
-}
 
-module "private_route_table" {
-  source                  = "./modules/network/route_table"
-  vpc_id                  = module.vpc.vpc_id
-  name                    = "private-rtb"
-  default_route_target_id = module.natgw.natgw_id
-  target_type             = "natgw"
-  subnet_ids              = module.private_subnets.subnet_ids
-  common_prefix           = local.common_prefix
-  common_tags             = local.common_tags
-}
-
-module "iam" {
-  source        = "./modules/iam"
-  common_prefix = local.common_prefix
-  common_tags   = local.common_tags
-}
-
-module "eks" {
-  source              = "./modules/eks"
-  cluster_name        = "mapzip-${terraform.workspace}-eks"
-  cluster_role_arn    = module.iam.eks_cluster_role_arn
-  node_group_role_arn = module.iam.eks_node_group_role_arn
-  subnet_ids          = module.private_subnets.subnet_ids
-  vpc_id              = module.vpc.vpc_id
-  public_access_cidrs = ["0.0.0.0/0"]
-  common_prefix       = local.common_prefix
-  common_tags         = local.common_tags
-}
 
 # ------------------------------------------------------------------------------
 # PostgreSQL 공급자 설정 (루트 모듈)
@@ -165,40 +127,40 @@ module "route53" {
 //cloudfront
 module "cloudfront" {
   source              = "./modules/cloudfront"
-  bucket_domain_name  = module.s3_website_bucket.bucket_domain_name
+  bucket_domain_name  = "placeholder.s3.amazonaws.com"  // 실제 s3 변수로 변경
   acm_certificate_arn = module.acm_frontend.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
 }
-
 //cloudfront- a record
 module "a_record_frontend" {
   source        = "./modules/record"
   record_type   = "A"
   zone_id       = module.route53.zone_id
-  name          = "www.mapzip.shop"
+  name          = "www.mapzip.shop" 
   alias_name    = module.cloudfront.domain_name
   alias_zone_id = module.cloudfront.zone_id
+  
 }
 
 //cloudfront(이미지연결)
 module "cloudfront_image" {
   source              = "./modules/cloudfront"
-  bucket_domain_name  = module.s3_image_bucket.bucket_domain_name
+  bucket_domain_name  = "placeholder.s3.amazonaws.com"  // 실제 s3 변수로 변경
   acm_certificate_arn = module.acm_image.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
 }
-
 //cloudfront(이미지연결)-a record
 module "a_record_image" {
   source        = "./modules/record"
   record_type   = "A"
   zone_id       = module.route53.zone_id
   name          = "img.mapzip.shop"
-  alias_name    = module.cloudfront_image.domain_name
-  alias_zone_id = module.cloudfront_image.zone_id
+  alias_name    = module.cloudfront.domain_name
+  alias_zone_id = module.cloudfront.zone_id
 }
+
 
 # CloudFront (프론트엔드용)
 module "acm_frontend" {
@@ -219,7 +181,6 @@ module "acm_backend" {
   common_tags               = local.common_tags
   route53_zone_id           = module.route53.zone_id
 }
-
 module "acm_image" {
   source                    = "./modules/acm"
   providers                 = { aws = aws.us_east_1 }
@@ -229,6 +190,7 @@ module "acm_image" {
   common_tags               = local.common_tags
 }
 
+
 module "ecr_backend" {
   source        = "./modules/ecr"
   name          = "backend"
@@ -236,41 +198,42 @@ module "ecr_backend" {
   common_tags   = local.common_tags
 }
 
-module "dynamodb" {
-  source       = "./modules/dynamodb"
-  name_prefix  = local.common_prefix
-  environment  = terraform.workspace
-  table_name   = "reviews"
-  common_tags  = local.common_tags
+# 퍼블릭 라우팅 테이블 모듈
+module "public_route_table" {
+  source                = "./modules/network/route_table"
+  vpc_id                = module.vpc.vpc_id
+  name                  = "public-rtb"
+  default_route_target_id = module.igw.igw_id
+  target_type           = "igw"
+  subnet_ids            = module.public_subnets.subnet_ids
+  common_prefix         = local.common_prefix
+  common_tags           = local.common_tags
 }
 
-module "elasticache" {
-  source                        = "./modules/elasticache"
-  name_prefix                   = local.common_prefix
-  environment                   = terraform.workspace
-  cluster_name                  = "session-cache"
-  common_tags                   = local.common_tags
-  elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
-  security_group_ids            = [aws_security_group.elasticache_sg.id]
+# 프라이빗 라우팅 테이블 모듈
+module "private_route_table" {
+  source                = "./modules/network/route_table"
+  vpc_id                = module.vpc.vpc_id
+  name                  = "private-rtb"
+  default_route_target_id = module.natgw.natgw_id
+  target_type           = "natgw"
+  subnet_ids            = module.private_subnets.subnet_ids
+  common_prefix         = local.common_prefix
+  common_tags           = local.common_tags
 }
 
-resource "aws_elasticache_subnet_group" "main" {
-  name        = "${local.common_prefix}elasticache-subnet-group"
-  subnet_ids  = module.private_subnets.subnet_ids
-  description = "ElastiCache subnet group for Mapzip"
-
-  tags = merge(
-    local.common_tags,
-    {
-      Name = "mapzip-${terraform.workspace}-elasticache-subnet-group"
-    }
-  )
+module "eks" {
+  source              = "./modules/eks"
+  cluster_name        = "mapzip-${terraform.workspace}-eks"
+  cluster_role_arn    = module.iam.eks_cluster_role_arn
+  node_group_role_arn = module.iam.eks_node_group_role_arn
+  subnet_ids          = module.private_subnets.subnet_ids
+  vpc_id              = module.vpc.vpc_id
+  public_access_cidrs = ["0.0.0.0/0"]
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
 }
 
-resource "aws_security_group" "elasticache_sg" {
-  name        = "${local.common_prefix}elasticache-sg"
-  description = "Allow inbound traffic to ElastiCache"
-  vpc_id      = module.vpc.vpc_id
 
 module "iam" {
   source = "./modules/iam"
