@@ -1,6 +1,6 @@
 module "vpc" {
-  source       = "./modules/network/vpc"
-  cidr_block   = "10.0.0.0/16"
+  source        = "./modules/network/vpc"
+  cidr_block    = "10.0.0.0/16"
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
 }
@@ -12,7 +12,6 @@ module "igw" {
   common_tags   = local.common_tags
 }
 
-# 퍼블릭 서브넷 (3개 - 각각 다른 가용 영역)
 module "public_subnets" {
   source        = "./modules/network/subnet"
   vpc_id        = module.vpc.vpc_id
@@ -26,18 +25,13 @@ module "public_subnets" {
   ]
 }
 
-# 프라이빗 서브넷 (3개 - 각각 다른 가용 영역)
 module "private_subnets" {
   source        = "./modules/network/subnet"
   vpc_id        = module.vpc.vpc_id
   subnet_type   = "private"
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
-  subnets = [
-    { name = "private-1", cidr_block = "10.0.14.0/24", availability_zone = "ap-northeast-2a" },
-    { name = "private-2", cidr_block = "10.0.15.0/24", availability_zone = "ap-northeast-2b" },
-    { name = "private-3", cidr_block = "10.0.16.0/24", availability_zone = "ap-northeast-2c" }
-  ]
+  subnets       = local.private_subnet_config
 }
 
 module "natgw" {
@@ -48,21 +42,96 @@ module "natgw" {
 }
 
 
-// route 53
-module "route53" {
-  source        = "./modules/route53"         
-  domain_name   = var.service_domain          
-  common_prefix = local.common_prefix        
-  common_tags   = local.common_tags          
+
+# ------------------------------------------------------------------------------
+# PostgreSQL 공급자 설정 (루트 모듈)
+# ------------------------------------------------------------------------------
+provider "postgresql" {
+  alias    = "aurora_root"
+  host     = module.aurora_db.aurora_cluster_endpoint
+  port     = 5432
+  username = var.db_master_username
+  password = var.db_master_password
+  sslmode  = "require"
+  connect_timeout = 10
 }
 
-//cloudfront
+# ------------------------------------------------------------------------------
+# 기능별 데이터베이스 및 역할 생성 (루트 모듈)
+# ------------------------------------------------------------------------------
+resource "postgresql_database" "dbs" {
+  provider = postgresql.aurora_root
+  for_each = var.enable_db_creation ? toset(keys(var.databases)) : []
+  name     = "mapzip_${each.key}"
+  owner    = postgresql_role.users[each.key].name
+}
+
+resource "postgresql_role" "users" {
+  provider = postgresql.aurora_root
+  for_each = var.enable_db_creation ? toset(keys(var.databases)) : []
+  name     = "mapzip-${each.key}-${terraform.workspace}"
+  login    = true
+  password = var.databases[each.key].password
+}
+
+module "aurora_db" {
+  source = "./modules/aurora"
+
+  # --- 공통 변수 전달 ---
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+
+  # --- 네트워크 변수 전달 (network 모듈 출력값 사용) ---
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.private_subnets.subnet_ids
+  availability_zones = [for s in local.private_subnet_config : s.availability_zone]
+
+  # --- DB 사양 및 계정 정보 전달 (변수 사용) ---
+  instance_class     = var.db_instance_class
+  db_master_username = var.db_master_username
+  db_master_password = var.db_master_password
+  instance_count     = var.instance_count
+}
+
+module "s3_image_bucket" {
+  source = "./modules/s3"
+
+  # --- 공통 변수 전달 ---
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+
+  # --- S3 버킷 설정 ---
+  bucket_name = "image"
+}
+
+module "s3_website_bucket" {
+  source = "./modules/s3"
+
+  # --- 공통 변수 전달 ---
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+
+  # --- S3 버킷 설정 ---
+  bucket_name = "website"
+  is_public   = true
+}
+
+// route 53
+module "route53" {
+  source        = "./modules/route53"
+  domain_name   = var.service_domain
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+}
+
+//cloudfront(프론트연결)
 module "cloudfront" {
   source              = "./modules/cloudfront"
-  bucket_domain_name  = "placeholder.s3.amazonaws.com"  // 실제 s3 변수로 변경
+  bucket_domain_name  = module.s3_website_bucket.bucket_domain_name 
   acm_certificate_arn = module.acm_frontend.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
+  depends_on = [module.acm_frontend]
 }
 //cloudfront- a record
 module "a_record_frontend" {
@@ -78,11 +147,13 @@ module "a_record_frontend" {
 //cloudfront(이미지연결)
 module "cloudfront_image" {
   source              = "./modules/cloudfront"
-  bucket_domain_name  = "placeholder.s3.amazonaws.com"  // 실제 s3 변수로 변경
+  bucket_domain_name  = module.s3_image_bucket.bucket_domain_name
   acm_certificate_arn = module.acm_image.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
+  depends_on = [module.acm_image]
 }
+
 //cloudfront(이미지연결)-a record
 module "a_record_image" {
   source        = "./modules/record"
@@ -160,12 +231,8 @@ module "eks" {
   cluster_role_arn    = module.iam.eks_cluster_role_arn
   node_group_role_arn = module.iam.eks_node_group_role_arn
   subnet_ids          = module.private_subnets.subnet_ids
-  common_prefix       = local.common_prefix
-  common_tags         = local.common_tags
-}
-
-module "iam" {
-  source        = "./modules/iam"
+  vpc_id              = module.vpc.vpc_id
+  public_access_cidrs = ["0.0.0.0/0"]
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
 }
@@ -189,4 +256,139 @@ module "client_vpn" {
   common_prefix            = local.common_prefix
   common_tags              = local.common_tags
   description             = "${local.common_prefix} Client VPN"
+}
+
+module "iam" {
+  source = "./modules/iam"
+  common_prefix  = local.common_prefix
+  common_tags    = local.common_tags
+
+}
+
+module "dynamodb" {
+  source       = "./modules/dynamodb"
+  name_prefix  = local.common_prefix
+  environment  = terraform.workspace
+  table_name   = "reviews"
+  common_tags  = local.common_tags
+}
+
+module "elasticache" {
+  source                        = "./modules/elasticache"
+  name_prefix                   = local.common_prefix
+  environment                   = terraform.workspace
+  cluster_name                  = "session-cache"
+  common_tags                   = local.common_tags
+  elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
+  security_group_ids            = [aws_security_group.elasticache_sg.id]
+}
+
+resource "aws_elasticache_subnet_group" "main" {
+  name        = "${local.common_prefix}elasticache-subnet-group"
+  subnet_ids  = module.private_subnets.subnet_ids
+  description = "ElastiCache subnet group for Mapzip"
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "mapzip-${terraform.workspace}-elasticache-subnet-group"
+    }
+  )
+}
+
+resource "aws_security_group" "elasticache_sg" {
+  name        = "${local.common_prefix}elasticache-sg"
+  description = "Allow inbound traffic to ElastiCache"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    cidr_blocks = [module.vpc.vpc_cidr_block] # module.vpc의 cidr_block 변수 참조
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "mapzip-${terraform.workspace}-elasticache-sg"
+    }
+  )
+}
+
+module "msk" {
+  source                 = "./modules/msk"
+  name_prefix            = local.common_prefix
+  environment            = terraform.workspace
+  cluster_name           = "main"
+  number_of_broker_nodes = 2
+  instance_type          = "kafka.t3.small"
+  ebs_volume_size        = 100
+  vpc_subnet_ids         = module.private_subnets.subnet_ids
+  security_group_ids     = [aws_security_group.msk_sg.id]
+  common_tags            = local.common_tags
+}
+
+resource "aws_security_group" "msk_sg" {
+  name        = "${local.common_prefix}${terraform.workspace}-msk-sg"
+  description = "Allow inbound traffic to MSK"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 9092 # Kafka plaintext port
+    to_port     = 9092
+    protocol    = "tcp"
+    cidr_blocks = [module.vpc.vpc_cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "${local.common_prefix}-${terraform.workspace}-msk-sg"
+    }
+  )
+}
+
+# s2s_vpn 
+module "s2s_vpn" {
+  source = "./modules/s2s"
+
+  vpc_id             = module.vpc.vpc_id
+  vpc_cidr_block     = module.vpc.vpc_cidr_block
+  on_prem_cidr_block = var.on_prem_cidr_block
+  on_prem_public_ip  = var.on_prem_public_ip
+  on_prem_bgp_asn    = var.on_prem_bgp_asn
+  route_table_id = module.private_route_table.route_table_id
+
+  # tags 관련 공통 변수 전달
+  common_prefix = local.common_prefix
+  s2s_vpn_tags = merge(local.common_tags, {
+    Name = "${local.common_prefix}s2s-vpn"
+  })
+
+}
+
+
+resource "aws_route_table_association" "private_subnet_assoc" {
+  for_each = zipmap(
+    ["subnet-1", "subnet-2", "subnet-3"],  
+    module.private_subnets.subnet_ids      
+  )
+
+  subnet_id      = each.value
+  route_table_id = module.private_route_table.route_table_id
 }
