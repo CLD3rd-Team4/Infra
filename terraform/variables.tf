@@ -70,3 +70,18 @@ variable "service_domain" {
   type        = string
   default     = "mapzip.shop"
 }
+
+variable "on_prem_cidr_block" {
+  type        = string
+  description = "온프레미스 내부 CIDR 대역 "
+}
+
+variable "on_prem_public_ip" {
+  type        = string
+  description = "온프레미스 라우터의 공인 IP"
+}
+
+variable "on_prem_bgp_asn" {
+  type        = number
+  description = "온프레미스 라우터의 BGP ASN"
+}
