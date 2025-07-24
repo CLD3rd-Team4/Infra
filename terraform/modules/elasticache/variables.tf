@@ -28,3 +28,21 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "node_type" {
+  description = "The node type for the ElastiCache cluster"
+  type        = string
+  default     = "cache.t3.medium"
+}
+
+variable "num_cache_nodes" {
+  description = "The number of cache nodes in the ElastiCache cluster"
+  type        = number
+  default     = 1
+}
+
+variable "parameter_group_name" {
+  description = "The parameter group for the ElastiCache cluster"
+  type        = string
+  default     = "default.redis7"
+}
