@@ -48,7 +48,7 @@ variable "instance_class" {
 variable "instance_count" {
   description = "생성할 DB 인스턴스의 개수"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 # ------------------------------------------------------------------------------
