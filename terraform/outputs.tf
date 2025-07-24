@@ -1,14 +1,14 @@
 # ------------------------------------------------------------------------------
 # Aurora DB 정보 출력
 # ------------------------------------------------------------------------------
-output "aurora_cluster_endpoint" {
-  description = "Aurora DB 클러스터의 엔드포인트 주소"
-  value       = module.aurora_db.aurora_cluster_endpoint
+output "aurora_cluster_endpoints" {
+  description = "서비스별 Aurora DB 클러스터의 엔드포인트 주소 맵"
+  value       = module.aurora_dbs.aurora_cluster_endpoints
 }
 
-output "aurora_cluster_port" {
-  description = "Aurora DB 클러스터의 포트 번호"
-  value       = module.aurora_db.aurora_cluster_port
+output "aurora_cluster_ports" {
+  description = "서비스별 Aurora DB 클러스터의 포트 번호 맵"
+  value       = module.aurora_dbs.aurora_cluster_ports
 }
 
 # ------------------------------------------------------------------------------
@@ -129,12 +129,22 @@ output "dynamodb_table_arn" {
   value       = module.dynamodb.dynamodb_table_arn
 }
 
-output "elasticache_cluster_id" {
-  description = "The ID of the ElastiCache cluster"
-  value       = module.elasticache.elasticache_cluster_id
+output "elasticache_auth_cluster_id" {
+  description = "The ID of the ElastiCache cluster for authentication"
+  value       = module.elasticache_auth.elasticache_cluster_id
 }
 
-output "elasticache_cluster_endpoint" {
-  description = "The endpoint of the ElastiCache cluster"
-  value       = module.elasticache.elasticache_cluster_endpoint
+output "elasticache_auth_cluster_endpoint" {
+  description = "The endpoint of the ElastiCache cluster for authentication"
+  value       = module.elasticache_auth.elasticache_cluster_endpoint
+}
+
+output "elasticache_recommend_cluster_id" {
+  description = "The ID of the ElastiCache cluster for recommendation"
+  value       = module.elasticache_recommend.elasticache_cluster_id
+}
+
+output "elasticache_recommend_cluster_endpoint" {
+  description = "The endpoint of the ElastiCache cluster for recommendation"
+  value       = module.elasticache_recommend.elasticache_cluster_endpoint
 }

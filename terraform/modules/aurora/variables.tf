@@ -45,8 +45,8 @@ variable "instance_class" {
   default     = "db.t3.medium"
 }
 
-variable "instance_count" {
-  description = "생성할 DB 인스턴스의 개수"
+variable "instances_per_cluster" {
+  description = "각 클러스터에 생성할 DB 인스턴스의 개수"
   type        = number
   default     = 1
 }
@@ -55,7 +55,11 @@ variable "instance_count" {
 # DB 정보 관련 변수
 # - TODO: 추후 SecretsManager와 연동하여 관리해야 합니다.
 # ------------------------------------------------------------------------------
-
+variable "aurora_service_names" {
+  description = "생성할 Aurora 클러스터의 서비스 이름 목록"
+  type        = list(string)
+  default     = []
+}
 
 variable "db_master_username" {
   description = "데이터베이스 마스터 사용자 이름"

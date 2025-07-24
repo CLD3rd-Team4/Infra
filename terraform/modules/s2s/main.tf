@@ -29,6 +29,11 @@ resource "aws_vpn_connection" "this" {
     Name = "${var.s2s_vpn_tags["Name"]}-vpn"
   })
 }
+resource "aws_vpn_connection_route" "this" {
+  destination_cidr_block = var.on_prem_cidr_block
+  vpn_connection_id      = aws_vpn_connection.this.id
+}
+
 
 # 기존 private route table
 resource "aws_route" "this" {
