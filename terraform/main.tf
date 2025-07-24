@@ -328,7 +328,7 @@ module "msk" {
   name_prefix            = local.common_prefix
   environment            = terraform.workspace
   cluster_name           = "main"
-  number_of_broker_nodes = 2
+  number_of_broker_nodes = 3
   instance_type          = "kafka.t3.small"
   ebs_volume_size        = 100
   vpc_subnet_ids         = module.private_subnets.subnet_ids
