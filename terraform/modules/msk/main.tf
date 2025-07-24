@@ -18,7 +18,7 @@ resource "aws_msk_cluster" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "mapzip-${var.environment}-${var.cluster_name}"
+      Name = "${var.name_prefix}-${var.cluster_name}"
     }
   )
 }
