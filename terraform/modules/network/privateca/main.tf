@@ -22,8 +22,8 @@ resource "aws_acmpca_certificate" "root" {
   template_arn = "arn:aws:acm-pca:::template/RootCACertificate/V1"
 
   validity {
-    type  = "YEARS"
-    value = 3
+    type  = "MONTHS"
+    value = 2
   }
 }
 
@@ -43,8 +43,8 @@ resource "aws_acmpca_certificate" "vpn_server" {
   template_arn = "arn:aws:acm-pca:::template/EndEntityCertificate/V1"
 
   validity {
-    type  = "YEARS"
-    value = 1
+    type  = "MONTHS"
+    value = 2
   }
 }
 
@@ -57,7 +57,7 @@ resource "aws_acmpca_certificate" "vpn_client" {
   template_arn = "arn:aws:acm-pca:::template/EndEntityCertificate/V1"
 
   validity {
-    type  = "YEARS"
-    value = 1
+    type  = "MONTHS"
+    value = 2
   }
 }
