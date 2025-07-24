@@ -131,6 +131,7 @@ module "cloudfront" {
   acm_certificate_arn = module.acm_frontend.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
+  depends_on = [module.acm_frontend]
 }
 //cloudfront- a record
 module "a_record_frontend" {
@@ -150,7 +151,9 @@ module "cloudfront_image" {
   acm_certificate_arn = module.acm_image.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
+  depends_on = [module.acm_image]
 }
+
 //cloudfront(이미지연결)-a record
 module "a_record_image" {
   source        = "./modules/record"
@@ -338,4 +341,34 @@ resource "aws_security_group" "msk_sg" {
       Name = "${local.common_prefix}-${terraform.workspace}-msk-sg"
     }
   )
+}
+
+# s2s_vpn 
+module "s2s_vpn" {
+  source = "./modules/s2s"
+
+  vpc_id             = module.vpc.vpc_id
+  vpc_cidr_block     = module.vpc.vpc_cidr_block
+  on_prem_cidr_block = var.on_prem_cidr_block
+  on_prem_public_ip  = var.on_prem_public_ip
+  on_prem_bgp_asn    = var.on_prem_bgp_asn
+  route_table_id = module.private_route_table.route_table_id
+
+  # tags 관련 공통 변수 전달
+  common_prefix = local.common_prefix
+  s2s_vpn_tags = merge(local.common_tags, {
+    Name = "${local.common_prefix}s2s-vpn"
+  })
+
+}
+
+
+resource "aws_route_table_association" "private_subnet_assoc" {
+  for_each = zipmap(
+    ["subnet-1", "subnet-2", "subnet-3"],  
+    module.private_subnets.subnet_ids      
+  )
+
+  subnet_id      = each.value
+  route_table_id = module.private_route_table.route_table_id
 }
