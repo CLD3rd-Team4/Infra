@@ -124,10 +124,10 @@ module "route53" {
   common_tags   = local.common_tags
 }
 
-//cloudfront
+//cloudfront(프론트연결)
 module "cloudfront" {
   source              = "./modules/cloudfront"
-  bucket_domain_name  = "placeholder.s3.amazonaws.com"  // 실제 s3 변수로 변경
+  bucket_domain_name  = module.s3_website_bucket.bucket_domain_name 
   acm_certificate_arn = module.acm_frontend.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
@@ -146,7 +146,7 @@ module "a_record_frontend" {
 //cloudfront(이미지연결)
 module "cloudfront_image" {
   source              = "./modules/cloudfront"
-  bucket_domain_name  = "placeholder.s3.amazonaws.com"  // 실제 s3 변수로 변경
+  bucket_domain_name  = module.s3_image_bucket.bucket_domain_name
   acm_certificate_arn = module.acm_image.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
