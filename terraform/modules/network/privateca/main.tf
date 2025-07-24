@@ -48,8 +48,10 @@ resource "aws_acmpca_certificate" "vpn_server" {
   }
 }
 
-# VPN 클라이언트 인증서
+# VPN 클라이언트 인증서 (팀원별 6개)
 resource "aws_acmpca_certificate" "vpn_client" {
+  for_each = toset(["JSW", "YJM", "PSY", "SYU", "CSM", "HDY"])
+  
   certificate_authority_arn   = aws_acmpca_certificate_authority.this.arn
   certificate_signing_request = aws_acmpca_certificate_authority.this.certificate_signing_request
   signing_algorithm          = "SHA512WITHRSA"
