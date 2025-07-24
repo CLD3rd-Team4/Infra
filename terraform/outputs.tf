@@ -129,12 +129,22 @@ output "dynamodb_table_arn" {
   value       = module.dynamodb.dynamodb_table_arn
 }
 
-output "elasticache_cluster_id" {
-  description = "The ID of the ElastiCache cluster"
-  value       = module.elasticache.elasticache_cluster_id
+output "elasticache_auth_cluster_id" {
+  description = "The ID of the ElastiCache cluster for authentication"
+  value       = module.elasticache_auth.elasticache_cluster_id
 }
 
-output "elasticache_cluster_endpoint" {
-  description = "The endpoint of the ElastiCache cluster"
-  value       = module.elasticache.elasticache_cluster_endpoint
+output "elasticache_auth_cluster_endpoint" {
+  description = "The endpoint of the ElastiCache cluster for authentication"
+  value       = module.elasticache_auth.elasticache_cluster_endpoint
+}
+
+output "elasticache_recommend_cluster_id" {
+  description = "The ID of the ElastiCache cluster for recommendation"
+  value       = module.elasticache_recommend.elasticache_cluster_id
+}
+
+output "elasticache_recommend_cluster_endpoint" {
+  description = "The endpoint of the ElastiCache cluster for recommendation"
+  value       = module.elasticache_recommend.elasticache_cluster_endpoint
 }

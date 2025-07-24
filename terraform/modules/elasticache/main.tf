@@ -3,9 +3,9 @@ resource "aws_elasticache_cluster" "this" {
   cluster_id           = "${var.name_prefix}${var.cluster_name}"
 
   engine               = "redis"
-  node_type            = "cache.t3.medium"
-  num_cache_nodes      = 1
-  parameter_group_name = "default.redis7"
+  node_type            = var.node_type
+  num_cache_nodes      = var.num_cache_nodes
+  parameter_group_name = var.parameter_group_name
   port                 = 6379
   subnet_group_name    = var.elasticache_subnet_group_name
   security_group_ids   = var.security_group_ids

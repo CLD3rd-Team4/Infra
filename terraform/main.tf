@@ -250,14 +250,26 @@ module "dynamodb" {
   common_tags  = local.common_tags
 }
 
-module "elasticache" {
+module "elasticache_auth" {
   source                        = "./modules/elasticache"
   name_prefix                   = local.common_prefix
   environment                   = terraform.workspace
-  cluster_name                  = "session-cache"
+  cluster_name                  = "auth-cache"
   common_tags                   = local.common_tags
   elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
   security_group_ids            = [aws_security_group.elasticache_sg.id]
+  node_type                     = "cache.t3.small" # 인증용은 작은 사양
+}
+
+module "elasticache_recommend" {
+  source                        = "./modules/elasticache"
+  name_prefix                   = local.common_prefix
+  environment                   = terraform.workspace
+  cluster_name                  = "recommend-cache"
+  common_tags                   = local.common_tags
+  elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
+  security_group_ids            = [aws_security_group.elasticache_sg.id]
+  node_type                     = "cache.t3.medium" # 추천용은 중간 사양
 }
 
 resource "aws_elasticache_subnet_group" "main" {
@@ -305,7 +317,7 @@ module "msk" {
   name_prefix            = local.common_prefix
   environment            = terraform.workspace
   cluster_name           = "main"
-  number_of_broker_nodes = 2
+  number_of_broker_nodes = 3 
   instance_type          = "kafka.t3.small"
   ebs_volume_size        = 100
   vpc_subnet_ids         = module.private_subnets.subnet_ids
