@@ -6,6 +6,12 @@ resource "aws_launch_template" "eks_lt" {
 
   vpc_security_group_ids = [aws_security_group.aws_eks_node_group.id]
 
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    /etc/eks/bootstrap.sh ${var.cluster_name}
+  EOF
+  )
+
   tag_specifications {
     resource_type = "instance"
     tags = var.common_tags
