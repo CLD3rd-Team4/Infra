@@ -6,7 +6,6 @@ provider "registry.terraform.io/cyrilgdn/postgresql" {
   constraints = "1.22.0"
   hashes = [
     "h1:7r3W369ugag9MiGYauupYdnmfz7ceFVmp9PNX2q8sD8=",
-    "h1:8jjuILf07SZmfJjKsjEAlu5125pyRy4sSEJ+y68N7FU=",
     "zh:038df91e31bda2a9a1f33adc886bc2084793e151130e29909b92f18b91315724",
     "zh:093328afc09cf13a5aed64daf9dc32d764e0a2b3c626c532e211fc22c08088f3",
     "zh:108ae8321312085037b987bbe0a4a8e8aa34a763b5b73ad6d9a78d605fa8074d",

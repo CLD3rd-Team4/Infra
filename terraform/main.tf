@@ -17,7 +17,12 @@ module "public_subnets" {
   vpc_id        = module.vpc.vpc_id
   subnet_type   = "public"
   common_prefix = local.common_prefix
-  common_tags   = local.common_tags
+  common_tags = merge(
+    local.common_tags,
+    {
+      "kubernetes.io/role/elb" = "1"
+    }
+  )
   subnets = [
     { name = "public-1", cidr_block = "10.0.4.0/24", availability_zone = "ap-northeast-2a" },
     { name = "public-2", cidr_block = "10.0.5.0/24", availability_zone = "ap-northeast-2b" },
@@ -30,7 +35,12 @@ module "private_subnets" {
   vpc_id        = module.vpc.vpc_id
   subnet_type   = "private"
   common_prefix = local.common_prefix
-  common_tags   = local.common_tags
+  common_tags = merge(
+    local.common_tags,
+    {
+      "kubernetes.io/role/internal-elb" = "1"
+    }
+  )
   subnets       = local.private_subnet_config
 }
 

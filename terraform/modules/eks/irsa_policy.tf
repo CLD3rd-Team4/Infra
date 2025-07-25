@@ -206,3 +206,58 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
   })
   tags = var.common_tags
 }
+
+resource "aws_iam_policy" "external_dns" {
+  name = "${var.cluster_name}-ExternalDNSPolicy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:ChangeResourceRecordSets"
+        ]
+        Resource = [
+          "arn:aws:route53:::hostedzone/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "route53:ListHostedZones",
+          "route53:ListResourceRecordSets"
+        ]
+        Resource = [
+          "*"
+        ]
+      }
+    ]
+  })
+
+  tags = var.common_tags
+}
+
+resource "aws_iam_policy" "cluster-autoscaler" {
+  name = "${var.cluster_name}-cluster-autoscaler-Policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeTags",
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup",
+          "ec2:DescribeLaunchTemplateVersions"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = var.common_tags
+}

@@ -85,6 +85,36 @@ variable "on_prem_bgp_asn" {
   type        = number
   description = "온프레미스 라우터의 BGP ASN"
 }
+
+variable "cluster_name" {
+  description = "The name of the EKS cluster"
+  type        = string
+  default     = "mapzip-dev-cluster"
+}
+
+variable "region" {
+  description = "The AWS region where the EKS cluster will be created"
+  type        = string
+  default     = "ap-northeast-2"
+}
+
+variable "prometheus_retention" {
+  description = "The retention period for Prometheus data"
+  type        = string
+}
+
+variable "tracing_sampling_percentage" {
+  description = "The percentage of requests to trace (100 = all requests, 50 = half, 1 = 1%)"
+  type        = number
+  default     = 1
+  }
+
+variable "is_crd_dependent_phase" {
+  description = "CRD에 종속되는 리소스 배포 단계인지 여부"
+  type        = bool
+  default     = false
+}
+
 # VPN 인증서 변수들
 variable "vpn_server_cert_body" {
   description = "VPN server certificate body (PEM format)"
