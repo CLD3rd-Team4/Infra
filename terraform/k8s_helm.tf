@@ -134,7 +134,7 @@ module "argocd_application_schedule" {
   source_path         = "argocd/service-schedule"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 module "argocd_application_recommend" {
@@ -145,7 +145,7 @@ module "argocd_application_recommend" {
   source_path         = "argocd/service-recommend"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 module "argocd_application_review" {
@@ -156,7 +156,7 @@ module "argocd_application_review" {
   source_path         = "argocd/service-review"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 module "argocd_application_platform" {
@@ -167,7 +167,7 @@ module "argocd_application_platform" {
   source_path         = "argocd/service-platform"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 
@@ -217,7 +217,7 @@ resource "helm_release" "kube_ops_view" {
     }
   ]
   timeout    = 600
-  depends_on = [ helm_release.aws_load_balancer_controller, helm_release.external-dns ]
+  depends_on = [ module.eks, helm_release.aws_load_balancer_controller, helm_release.external-dns ]
 }
 
 
@@ -263,6 +263,7 @@ resource "kubernetes_namespace" "service-review" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
 }
 
 resource "kubernetes_namespace" "service-recommend" {
@@ -272,6 +273,7 @@ resource "kubernetes_namespace" "service-recommend" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
 }
 resource "kubernetes_namespace" "service-schedule" {
   metadata {
@@ -280,6 +282,7 @@ resource "kubernetes_namespace" "service-schedule" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
 }
 resource "kubernetes_namespace" "service-platform" {
   metadata {
@@ -288,6 +291,7 @@ resource "kubernetes_namespace" "service-platform" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
 }
 
 
@@ -412,7 +416,7 @@ resource "kubernetes_deployment" "jaeger" {
       }
     }
   }
-  depends_on = [helm_release.istio_base]
+  depends_on = [module.eks, helm_release.istio_base]
 }
 
 # Istio - Jaeger - tracing 서비스 (UI 및 GRPC)
@@ -445,7 +449,7 @@ resource "kubernetes_service" "jaeger_tracing" {
     }
   }
 
-  depends_on = [kubernetes_deployment.jaeger]
+  depends_on = [module.eks, kubernetes_deployment.jaeger]
 }
 
 # Istio - Jaeger - zipkin 서비스 (호환용)
@@ -470,7 +474,7 @@ resource "kubernetes_service" "zipkin" {
     }
   }
 
-  depends_on = [kubernetes_deployment.jaeger]
+  depends_on = [module.eks, kubernetes_deployment.jaeger]
 }
 
 # Istio - Jaeger - jaeger-collector 서비스
@@ -521,7 +525,7 @@ resource "kubernetes_service" "jaeger_collector" {
     }
   }
 
-  depends_on = [kubernetes_deployment.jaeger]
+  depends_on = [module.eks, kubernetes_deployment.jaeger]
 }
 
 
@@ -549,10 +553,6 @@ resource "helm_release" "istiod" {
     {
       name  = "meshConfig.enableTracing"
       value = "true"
-    },
-    {
-      name  = "meshConfig.defaultConfig.tracing.stackdriver"
-      value = "{}" # zipkin으로 jaeger설정하는 레거시 방식 비활성화 
     },
     {
       name  = "meshConfig.extensionProviders[0].name"
@@ -586,7 +586,7 @@ resource "helm_release" "istio_ingress" {
     }
   ]
 
-  depends_on = [helm_release.istiod]
+  depends_on = [module.eks, helm_release.istiod]
 }
 
 resource "kubernetes_ingress_v1" "istio_alb_ingress" {
@@ -667,7 +667,7 @@ resource "kubernetes_ingress_v1" "istio_alb_ingress" {
     }
   }
 
-  depends_on = [helm_release.istio_ingress, helm_release.aws_load_balancer_controller, helm_release.external-dns]
+  depends_on = [module.eks, helm_release.istio_ingress, helm_release.aws_load_balancer_controller, helm_release.external-dns]
 }
 
 # 멀티클러스터간 사이드카 mTLS용 게이트웨이
@@ -700,7 +700,7 @@ resource "kubernetes_manifest" "istio_crossnetwork_gateway" {
     }
   }
 
-  depends_on = [helm_release.istiod]
+  depends_on = [module.eks, helm_release.istiod]
 }
 
 # 멀티클러스터 설정된 후에 해야함
@@ -739,7 +739,7 @@ resource "helm_release" "prometheus" {
     file("values/prometheus-values.yaml")
   ]
 
-  depends_on = [helm_release.external-dns, helm_release.istiod, helm_release.aws_load_balancer_controller]
+  depends_on = [module.eks, helm_release.external-dns, helm_release.istiod, helm_release.aws_load_balancer_controller]
   
 }
 
@@ -769,7 +769,7 @@ resource "kubernetes_manifest" "istio_telemetry" {
     }
   }
 
-  depends_on = [helm_release.istiod]
+  depends_on = [module.eks, helm_release.istiod]
 }
 
 
