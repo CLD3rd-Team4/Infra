@@ -1,0 +1,30 @@
+# cluster2의 메트릭을 가져옴
+server:
+  extraScrapeConfigs: |
+    - job_name: 'federate-cluster2'
+      scrape_interval: 15s
+      honor_labels: true
+      metrics_path: '/federate'
+      params:
+        'match[]':
+          - '{job="kubernetes-pods"}'
+      static_configs:
+        - targets:
+            - 'prometheus.monitoring.svc.cluster.local'
+          labels:
+            cluster: cluster2
+
+    - job_name: 'federate-local'
+      honor_labels: true
+      metrics_path: '/federate'
+      metric_relabel_configs:
+      - replacement: 'cluster1'
+        target_label: cluster
+      kubernetes_sd_configs:
+        - role: pod
+          namespaces:
+            names: ['istio-system']
+      params:
+        'match[]':
+          - '{__name__=~"istio_(.*)"}'
+          - '{__name__=~"pilot(.*)"}'

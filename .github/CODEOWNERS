@@ -10,6 +10,8 @@
 /terraform/modules/eks/ @1dyn
 /terraform/modules/iam/ @1dyn
 /terraform/k8s_helm.tf @siiiirru
+/terraform/modules/k8s/ @siiiirru
+/terraform/values/ @siiiirru
 /terraform/modules/dynamodb/ @csm123455
 /terraform/modules/aurora/ @kaiju782
 /terraform/modules/s3/ @kaiju782
