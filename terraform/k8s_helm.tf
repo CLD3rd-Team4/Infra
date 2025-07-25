@@ -81,10 +81,6 @@ resource "helm_release" "external-dns" {
     {
       name  = "args[0]"
       value = "--annotation-filter=external-dns.alpha.kubernetes.io/hostname"
-    },
-    {
-      name  = "extraArgs[0]"
-      value = "--disable-ipv6"
     }
   ]
 
@@ -555,8 +551,8 @@ resource "helm_release" "istiod" {
       value = "true"
     },
     {
-      name  = "meshConfig.defaultConfig.tracing.stackdriver.debug"
-      value = "false" # zipkin으로 jaeger설정하는 레거시 방식 비활성화 
+      name  = "meshConfig.defaultConfig.tracing.stackdriver"
+      value = "{}" # zipkin으로 jaeger설정하는 레거시 방식 비활성화 
     },
     {
       name  = "meshConfig.extensionProviders[0].name"
