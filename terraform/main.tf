@@ -254,8 +254,13 @@ module "eks" {
 module "acm_vpn" {
   source = "./modules/acm-vpn"
   
-  team_members  = ["client1.domain.tld"]  # 임시로 기존 인증서만 사용
-  cert_path     = "../vpn-certs/pki"
+  # 인증서 내용을 변수로 전달 (Terraform Cloud Variables에서 설정)
+  server_cert_body    = var.vpn_server_cert_body
+  server_private_key  = var.vpn_server_private_key
+  ca_cert_body        = var.vpn_ca_cert_body
+  ca_private_key      = var.vpn_ca_private_key
+  client_certs        = var.vpn_client_certs
+  
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
 }
