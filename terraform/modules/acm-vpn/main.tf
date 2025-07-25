@@ -27,7 +27,7 @@ resource "aws_acm_certificate" "vpn_ca" {
 
 # 팀원별 클라이언트 인증서 ACM 업로드
 resource "aws_acm_certificate" "vpn_client" {
-  for_each = var.client_certs
+  for_each = nonsensitive(var.client_certs)
   
   certificate_body  = each.value.cert_body
   private_key       = each.value.private_key
