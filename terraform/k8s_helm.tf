@@ -294,6 +294,16 @@ resource "kubernetes_namespace" "service-platform" {
   depends_on = [module.eks]
 }
 
+resource "kubernetes_namespace" "monitoring" {
+  metadata {
+    name = "monitoring"
+    labels = {
+      "istio-injection" = "enabled"
+    }
+  }
+  depends_on = [module.eks]
+}
+
 
 # Istio 설치 및 설정
 resource "kubernetes_namespace" "istio_system" {
@@ -732,6 +742,10 @@ resource "helm_release" "prometheus" {
     {
       name  = "server.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
       value = "internal"
+    },
+    {
+      name = "server.persistentVolume.storageClass"
+      value = "gp2"
     }
   ]
 
