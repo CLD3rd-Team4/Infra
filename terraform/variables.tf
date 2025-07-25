@@ -152,4 +152,3 @@ variable "vpn_client_certs" {
   sensitive = true
   default   = {}
 }
- 
