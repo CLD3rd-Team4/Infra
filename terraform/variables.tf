@@ -115,7 +115,6 @@ variable "is_crd_dependent_phase" {
   default     = false
 }
 
-
 # VPN 인증서 변수들
 variable "vpn_server_cert_body" {
   description = "VPN server certificate body (PEM format)"
@@ -154,4 +153,3 @@ variable "vpn_client_certs" {
   sensitive = true
   default   = {}
 }
- 
