@@ -250,9 +250,17 @@ module "eks" {
   common_tags   = local.common_tags
 }
 
-# Private CA 모듈
-module "privateca" {
-  source        = "./modules/network/privateca"
+# ACM VPN 인증서 모듈 (Private CA 대신 로컬 인증서 사용)
+module "acm_vpn" {
+  source = "./modules/acm-vpn"
+  
+  # 인증서 내용을 변수로 전달 (Terraform Cloud Variables에서 설정)
+  server_cert_body    = var.vpn_server_cert_body
+  server_private_key  = var.vpn_server_private_key
+  ca_cert_body        = var.vpn_ca_cert_body
+  ca_private_key      = var.vpn_ca_private_key
+  client_certs        = var.vpn_client_certs
+  
   common_prefix = local.common_prefix
   common_tags   = local.common_tags
 }
@@ -264,8 +272,8 @@ module "client_vpn" {
   vpc_cidr                 = module.vpc.vpc_cidr
   subnet_ids               = module.private_subnets.subnet_ids
   client_cidr_block        = "172.16.0.0/22"  # VPC CIDR과 겹치지 않는 범위
-  server_certificate_arn    = module.privateca.server_certificate_arn
-  root_certificate_chain_arn = module.privateca.client_certificate_arn
+  server_certificate_arn    = module.acm_vpn.server_certificate_arn
+  root_certificate_chain_arn = module.acm_vpn.ca_certificate_arn
   common_prefix            = local.common_prefix
   common_tags              = local.common_tags
   description             = "${local.common_prefix} Client VPN"
