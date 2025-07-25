@@ -255,9 +255,9 @@ module "eks" {
 
 # Client VPN
 module "client_vpn" {
-  source = "./modules/network/client-vpn"
+  source = "./modules/network/clientvpn"
 
-  name                    = "${var.service_name}-client-vpn"
+  name                    = "${local.common_prefix}-client-vpn"
   description             = "Client VPN for ${var.service_name}"
   vpc_id                  = module.vpc.vpc_id
   subnet_ids              = module.private_subnets.subnet_ids
