@@ -153,3 +153,13 @@ variable "vpn_client_certs" {
   sensitive = true
   default   = {}
 }
+
+variable "eks_key_pair" {
+  description = "SSH key pair name to use for EC2/EKS nodes"
+  type        = string
+}
+
+variable "ami_id" {
+  description = "AMI ID for EKS worker nodes"
+  type        = string
+}

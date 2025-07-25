@@ -246,8 +246,10 @@ module "eks" {
   subnet_ids          = module.private_subnets.subnet_ids
   vpc_id              = module.vpc.vpc_id
   public_access_cidrs = ["0.0.0.0/0"]
-  common_prefix = local.common_prefix
-  common_tags   = local.common_tags
+  ami_id              = var.ami_id
+  eks_key_pair        = var.eks_key_pair
+  common_prefix       = local.common_prefix
+  common_tags         = local.common_tags
 }
 
 # ACM VPN 인증서 모듈 (Private CA 대신 로컬 인증서 사용)
