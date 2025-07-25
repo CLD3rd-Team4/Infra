@@ -78,10 +78,10 @@ resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
 
 resource "aws_iam_role_policy_attachment" "external_dns_attach" {
   role       = aws_iam_role.external_dns_irsa.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
+  policy_arn = aws_iam_policy.external_dns.arn
 }
 
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach" {
   role       = aws_iam_role.cluster_autoscaler_irsa.name
-  policy_arn = "arn:aws:iam::aws:policy/AutoScalingFullAccess"
+  policy_arn = aws_iam_policy.cluster-autoscaler.arn
 }

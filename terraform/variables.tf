@@ -108,3 +108,9 @@ variable "tracing_sampling_percentage" {
   type        = number
   default     = 1
   }
+
+variable "is_crd_dependent_phase" {
+  description = "CRD에 종속되는 리소스 배포 단계인지 여부"
+  type        = bool
+  default     = false
+}

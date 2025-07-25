@@ -16,7 +16,7 @@ resource "helm_release" "aws_load_balancer_controller" {
     },
     {
       name  = "vpcId"
-      value = data.aws_eks_cluster.cluster.resources_vpc_config[0].vpc_id
+      value = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
     },
     {
       name  = "serviceAccount.create"
@@ -122,6 +122,7 @@ resource "helm_release" "argocd" {
 }
 
 module "argocd_application_schedule" {
+  count = var.is_crd_dependent_phase ? 1 : 0
   source              = "./modules/k8s/argocd_app"
   app_name            = "${local.common_prefix}service-schedule"
   destination_namespace = "service-schedule"
@@ -132,6 +133,7 @@ module "argocd_application_schedule" {
 }
 
 module "argocd_application_recommend" {
+  count = var.is_crd_dependent_phase ? 1 : 0
   source              = "./modules/k8s/argocd_app"
   app_name            = "${local.common_prefix}service-recommend"
   destination_namespace = "service-recommend"
@@ -142,6 +144,7 @@ module "argocd_application_recommend" {
 }
 
 module "argocd_application_review" {
+  count = var.is_crd_dependent_phase ? 1 : 0
   source              = "./modules/k8s/argocd_app"
   app_name            = "${local.common_prefix}service-review"
   destination_namespace = "service-review"
@@ -152,6 +155,7 @@ module "argocd_application_review" {
 }
 
 module "argocd_application_platform" {
+  count = var.is_crd_dependent_phase ? 1 : 0
   source              = "./modules/k8s/argocd_app"
   app_name            = "${local.common_prefix}service-platform"
   destination_namespace = "service-platform"
@@ -628,6 +632,7 @@ resource "kubernetes_ingress_v1" "istio_alb_ingress" {
 
 # 멀티클러스터간 사이드카 mTLS용 게이트웨이
 resource "kubernetes_manifest" "istio_crossnetwork_gateway" {
+  count = var.is_crd_dependent_phase ? 1 : 0
   manifest = {
     apiVersion = "networking.istio.io/v1alpha3"
     kind       = "Gateway"
@@ -690,9 +695,9 @@ resource "helm_release" "prometheus" {
     }
   ]
 
-  # values = [
-  #   file("values/prometheus-values.yaml")
-  # ]
+  values = [
+    file("values/prometheus-values.yaml")
+  ]
 
   depends_on = [helm_release.external-dns, helm_release.istiod]
   
@@ -701,6 +706,7 @@ resource "helm_release" "prometheus" {
 
 
 resource "kubernetes_manifest" "istio_telemetry" {
+  count = var.is_crd_dependent_phase ? 1 : 0
   manifest = {
     apiVersion = "telemetry.istio.io/v1"
     kind       = "Telemetry"
