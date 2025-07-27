@@ -450,3 +450,64 @@ resource "aws_route_table_association" "private_subnet_assoc" {
   subnet_id      = each.value
   route_table_id = module.private_route_table.route_table_id
 }
+
+
+
+data "aws_caller_identity" "current" {}
+
+module "github_oidc_role" {
+  source = "./modules/github_oidc_role"
+
+  role_name           = "${local.common_prefix}GitHubActionsOIDCRole"
+  github_repo_pattern = "repo:CLD3rd-Team4/App:*"
+  inline_policies = [
+    {
+      name = "${local.common_prefix}app-github-actions-policy"
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Effect = "Allow"
+            Action = [
+              "s3:PutObject",
+              "s3:PutObjectAcl",
+              "s3:DeleteObject",
+              "s3:GetObject",
+              "s3:ListBucket"
+            ]
+            Resource = [
+              "arn:aws:s3:::${module.s3_website_bucket.bucket_name}",
+              "arn:aws:s3:::${module.s3_website_bucket.bucket_name}/*"
+            ]
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "cloudfront:CreateInvalidation"
+            ]
+            Resource = module.cloudfront.distribution_arn
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "ecr-public:GetAuthorizationToken"
+            ]
+            Resource = "*"
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "ecr-public:BatchCheckLayerAvailability",
+              "ecr-public:CompleteLayerUpload",
+              "ecr-public:GetDownloadUrlForLayer",
+              "ecr-public:InitiateLayerUpload",
+              "ecr-public:PutImage",
+              "ecr-public:UploadLayerPart"
+            ]
+            Resource = "arn:aws:ecr-public::${data.aws_caller_identity.current.account_id}:repository/*"
+          }
+        ]
+      })
+    }
+  ]
+}
