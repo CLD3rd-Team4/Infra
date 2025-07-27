@@ -207,11 +207,11 @@ module "acm_image" {
 }
 
 
-module "ecr_backend" {
-  source        = "./modules/ecr"
-  name          = "backend"
-  common_prefix = local.common_prefix
-  common_tags   = local.common_tags
+module "ecr_repositories" {
+  source           = "./modules/ecr"
+  repository_names = ["auth", "config", "review", "recommend", "schedule", "gateway"]
+  common_prefix    = local.common_prefix
+  common_tags      = local.common_tags
 }
 
 # 퍼블릭 라우팅 테이블 모듈
@@ -490,21 +490,21 @@ module "github_oidc_role" {
           {
             Effect = "Allow"
             Action = [
-              "ecr-public:GetAuthorizationToken"
+              "ecr:GetAuthorizationToken"
             ]
             Resource = "*"
           },
           {
             Effect = "Allow"
             Action = [
-              "ecr-public:BatchCheckLayerAvailability",
-              "ecr-public:CompleteLayerUpload",
-              "ecr-public:GetDownloadUrlForLayer",
-              "ecr-public:InitiateLayerUpload",
-              "ecr-public:PutImage",
-              "ecr-public:UploadLayerPart"
+              "ecr:BatchCheckLayerAvailability",
+              "ecr:CompleteLayerUpload",
+              "ecr:GetDownloadUrlForLayer",
+              "ecr:InitiateLayerUpload",
+              "ecr:PutImage",
+              "ecr:UploadLayerPart"
             ]
-            Resource = "arn:aws:ecr-public::${data.aws_caller_identity.current.account_id}:repository/*"
+            Resource = "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/*"
           }
         ]
       })
