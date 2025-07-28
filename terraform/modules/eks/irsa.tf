@@ -92,8 +92,8 @@ resource "aws_iam_role" "efs_csi_role" {
         }
         Condition = {
           StringEquals = {
-            "${replace(aws_iam_openid_connect_provider.cluster_oidc.url, "https://", "")}:sub" = "system:serviceaccount:kube-system:efs-csi-controller-sa"
-            "${replace(aws_iam_openid_connect_provider.cluster_oidc.url, "https://", "")}:aud" = "sts.amazonaws.com"
+            "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:sub" = "system:serviceaccount:kube-system:efs-csi-controller-sa"
+            "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:aud" = "sts.amazonaws.com"
           }
         }
       }
