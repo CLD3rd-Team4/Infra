@@ -2,7 +2,7 @@ resource "aws_elasticache_cluster" "this" {
   # --- 네이밍 ---
   cluster_id           = "${var.name_prefix}${var.cluster_name}"
 
-  engine               = "redis"
+  engine               = "valkey"
   node_type            = var.node_type
   num_cache_nodes      = var.num_cache_nodes
   parameter_group_name = var.parameter_group_name
