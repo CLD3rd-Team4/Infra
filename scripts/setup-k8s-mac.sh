@@ -195,17 +195,12 @@ kubectl apply -f values/cross-network-gateway.yaml
 echo "Creating ArgoCD Applications..."
 kubectl apply -f values/argocd-applications.yaml
 
-echo "Installing Sealed Secrets Controller..."
-helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
-  --namespace kube-system \
-  --version 2.15.4 \
-  --wait
 
-echo "Waiting for Sealed Secrets Controller to be ready..."
+echo Installing Sealed Secrets Controller...
+helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --namespace kube-system --version 2.15.4 --wait
+
+echo Waiting for Sealed Secrets Controller to be ready...
 kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-controller -n kube-system
-
-echo "Note: Config Server Secrets are now managed by ArgoCD via SealedSecrets"
-echo "To generate SealedSecret values, use: ./generate-sealed-secrets.sh"
 
 echo "========================================"
 echo "Setup completed successfully!"

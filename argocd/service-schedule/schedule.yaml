@@ -84,7 +84,7 @@ spec:
         - containerPort: 9090
           name: grpc
           protocol: TCP
-        
+
         # 리소스 제한
         resources:
           requests:
@@ -93,7 +93,7 @@ spec:
           limits:
             cpu: "500m"
             memory: "1Gi"
-        
+
         # Health Check (gRPC 서비스에 맞게 조정)
         livenessProbe:
           grpc:
@@ -102,7 +102,7 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 5
           failureThreshold: 3
-        
+
         readinessProbe:
           grpc:
             port: 9090
@@ -110,45 +110,14 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 3
           successThreshold: 1
-        
-        # 환경 변수 설정
-        env:
-        - name: TMAP_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: schedule-api-keys
-              key: TMAP_API_KEY
-        - name: KAKAO_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: schedule-api-keys
-              key: KAKAO_API_KEY
-        envFrom:
-        - configMapRef:
-            name: schedule-config
-        - secretRef:
-            name: schedule-db-credentials
----
-# 7. Gateway에서 Schedule Service로 라우팅하기 위한 VirtualService 추가
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: schedule-vs
-  namespace: service-platform
-spec:
-  hosts:
-  - "api.mapzip.shop"
-  gateways:
-  - spring-gateway-gateway
-  http:
-  - match:
-    - uri:
-        prefix: "/v1/schedules"
-    route:
-    - destination:
-        host: schedule.service-platform.svc.cluster.local
-        port:
-          number: 9090
-    retries:
-      attempts: 3
-      perTryTimeout: 10s
+
+
+      - name: istio-proxy
+        volumeMounts:
+          - name: proto-descriptors
+            mountPath: /etc/envoy/protos
+            readOnly: true
+      volumes:
+        - name: proto-descriptors
+          configMap:
+            name: schedule-pb
