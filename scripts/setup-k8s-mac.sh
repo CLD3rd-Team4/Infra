@@ -35,6 +35,7 @@ helm repo add geek-cookbook https://geek-cookbook.github.io/charts/
 helm repo add autoscaler https://kubernetes.github.io/autoscaler
 helm repo add istio https://istio-release.storage.googleapis.com/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
 helm repo update
 
 echo "Creating namespaces..."
@@ -402,6 +403,76 @@ spec:
     - CreateNamespace=true
 EOF
 
+echo "Installing Sealed Secrets Controller..."
+helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
+  --namespace kube-system \
+  --version 2.15.4 \
+  --wait
+
+echo "Waiting for Sealed Secrets Controller to be ready..."
+kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-controller -n kube-system
+
+echo "Creating Config Server Secrets..."
+# Check if environment variables are set
+if [ -n "$GIT_USERNAME" ] && [ -n "$GIT_TOKEN" ]; then
+    echo "Creating Config Server secrets with provided credentials..."
+    
+    # Generate random encryption key
+    ENCRYPT_KEY=$(openssl rand -base64 32)
+    
+    # Create temporary directory
+    mkdir -p /tmp/config-secrets
+    
+    # Create encrypt secret
+    cat > /tmp/config-secrets/encrypt-secret.yaml << EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: config-server-encrypt-secret
+  namespace: service-platform
+type: Opaque
+data:
+  encrypt-key: $(echo -n "$ENCRYPT_KEY" | base64)
+EOF
+
+    # Create git secret
+    cat > /tmp/config-secrets/git-secret.yaml << EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: config-server-git-secret
+  namespace: service-platform
+type: Opaque
+data:
+  username: $(echo -n "$GIT_USERNAME" | base64)
+  token: $(echo -n "$GIT_TOKEN" | base64)
+EOF
+
+    # Check if kubeseal is available
+    if command -v kubeseal &> /dev/null; then
+        echo "Creating SealedSecrets..."
+        kubeseal -f /tmp/config-secrets/encrypt-secret.yaml -w /tmp/config-secrets/encrypt-sealed.yaml
+        kubeseal -f /tmp/config-secrets/git-secret.yaml -w /tmp/config-secrets/git-sealed.yaml
+        
+        echo "Applying SealedSecrets to cluster..."
+        kubectl apply -f /tmp/config-secrets/encrypt-sealed.yaml
+        kubectl apply -f /tmp/config-secrets/git-sealed.yaml
+        
+        echo "Config Server secrets created successfully!"
+    else
+        echo "Warning: kubeseal not found. Install kubeseal to create Config Server secrets:"
+        echo "  brew install kubeseal"
+        echo "Then run: GIT_USERNAME=your-username GIT_TOKEN=your-token ./setup-k8s-mac.sh"
+    fi
+    
+    # Clean up
+    rm -rf /tmp/config-secrets
+else
+    echo "Skipping Config Server secrets creation."
+    echo "To create Config Server secrets, run:"
+    echo "  GIT_USERNAME=your-username GIT_TOKEN=your-token ./setup-k8s-mac.sh"
+fi
+
 echo "========================================"
 echo "Setup completed successfully!"
 echo "========================================"
@@ -416,6 +487,7 @@ echo "- Cluster Autoscaler"
 echo "- Istio (Base, Istiod, Ingress Gateway)"
 echo "- Jaeger (Distributed Tracing)"
 echo "- Prometheus"
+echo "- Sealed Secrets Controller"
 echo ""
 echo "Verify all services: kubectl get pods --all-namespaces"
 echo "ArgoCD UI: kubectl get svc -n argocd"

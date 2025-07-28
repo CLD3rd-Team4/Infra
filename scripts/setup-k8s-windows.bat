@@ -40,6 +40,7 @@ helm repo add geek-cookbook https://geek-cookbook.github.io/charts/
 helm repo add autoscaler https://kubernetes.github.io/autoscaler
 helm repo add istio https://istio-release.storage.googleapis.com/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
 helm repo update
 
 echo Creating namespaces...
@@ -407,6 +408,74 @@ spec:
     - CreateNamespace=true
 EOF
 
+echo Installing Sealed Secrets Controller...
+helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --namespace kube-system --version 2.15.4 --wait
+
+echo Waiting for Sealed Secrets Controller to be ready...
+kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-controller -n kube-system
+
+echo Creating Config Server Secrets...
+REM Check if environment variables are set
+if defined GIT_USERNAME if defined GIT_TOKEN (
+    echo Creating Config Server secrets with provided credentials...
+    
+    REM Create temporary directory
+    if not exist "%TEMP%\config-secrets" mkdir "%TEMP%\config-secrets"
+    
+    REM Generate random encryption key (Windows equivalent)
+    for /f %%i in ('powershell -command "[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes([System.Web.Security.Membership]::GeneratePassword(32, 0)))"') do set ENCRYPT_KEY=%%i
+    
+    REM Create encrypt secret
+    (
+        echo apiVersion: v1
+        echo kind: Secret
+        echo metadata:
+        echo   name: config-server-encrypt-secret
+        echo   namespace: service-platform
+        echo type: Opaque
+        echo data:
+        for /f %%i in ('powershell -command "[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('%ENCRYPT_KEY%'))"') do echo   encrypt-key: %%i
+    ) > "%TEMP%\config-secrets\encrypt-secret.yaml"
+    
+    REM Create git secret
+    (
+        echo apiVersion: v1
+        echo kind: Secret
+        echo metadata:
+        echo   name: config-server-git-secret
+        echo   namespace: service-platform
+        echo type: Opaque
+        echo data:
+        for /f %%i in ('powershell -command "[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('%GIT_USERNAME%'))"') do echo   username: %%i
+        for /f %%i in ('powershell -command "[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('%GIT_TOKEN%'))"') do echo   token: %%i
+    ) > "%TEMP%\config-secrets\git-secret.yaml"
+    
+    REM Check if kubeseal is available
+    kubeseal --version >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo Creating SealedSecrets...
+        kubeseal -f "%TEMP%\config-secrets\encrypt-secret.yaml" -w "%TEMP%\config-secrets\encrypt-sealed.yaml"
+        kubeseal -f "%TEMP%\config-secrets\git-secret.yaml" -w "%TEMP%\config-secrets\git-sealed.yaml"
+        
+        echo Applying SealedSecrets to cluster...
+        kubectl apply -f "%TEMP%\config-secrets\encrypt-sealed.yaml"
+        kubectl apply -f "%TEMP%\config-secrets\git-sealed.yaml"
+        
+        echo Config Server secrets created successfully!
+    ) else (
+        echo Warning: kubeseal not found. Install kubeseal to create Config Server secrets:
+        echo   Download from: https://github.com/bitnami-labs/sealed-secrets/releases
+        echo Then run: set GIT_USERNAME=your-username ^& set GIT_TOKEN=your-token ^& setup-k8s-windows.bat
+    )
+    
+    REM Clean up
+    rmdir /s /q "%TEMP%\config-secrets"
+) else (
+    echo Skipping Config Server secrets creation.
+    echo To create Config Server secrets, run:
+    echo   set GIT_USERNAME=your-username ^& set GIT_TOKEN=your-token ^& setup-k8s-windows.bat
+)
+
 echo ========================================
 echo Setup completed successfully!
 echo ========================================
@@ -421,6 +490,7 @@ echo - Cluster Autoscaler
 echo - Istio (Base, Istiod, Ingress Gateway)
 echo - Jaeger (Distributed Tracing)
 echo - Prometheus
+echo - Sealed Secrets Controller
 echo.
 echo Verify all services: kubectl get pods --all-namespaces
 echo ArgoCD UI: kubectl get svc -n argocd
