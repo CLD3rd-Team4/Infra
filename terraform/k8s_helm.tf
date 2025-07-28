@@ -917,6 +917,8 @@ resource "kubernetes_service_account" "sealed_secrets_job" {
   metadata {
     name = "sealed-secrets-job"
   }
+
+  depends_on = [helm_release.sealed_secrets]
 }
 
 # Job용 ClusterRole
@@ -942,6 +944,8 @@ resource "kubernetes_cluster_role" "sealed_secrets_job" {
     resources  = ["customresourcedefinitions"]
     verbs      = ["get", "list"]
   }
+
+  depends_on = [helm_release.sealed_secrets]
 }
 
 # Job용 ClusterRoleBinding
@@ -961,4 +965,10 @@ resource "kubernetes_cluster_role_binding" "sealed_secrets_job" {
     name      = kubernetes_service_account.sealed_secrets_job.metadata[0].name
     namespace = "default"
   }
+
+  depends_on = [
+    helm_release.sealed_secrets,
+    kubernetes_cluster_role.sealed_secrets_job,
+    kubernetes_service_account.sealed_secrets_job
+  ]
 }
