@@ -6,11 +6,26 @@ resource "aws_launch_template" "eks_lt" {
 
   vpc_security_group_ids = [aws_security_group.aws_eks_node_group.id]
 
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    /etc/eks/bootstrap.sh ${var.cluster_name}
-  EOF
-  )
+  user_data = base64encode(<<EOF
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="BOUNDARY"
+
+--BOUNDARY
+Content-Type: application/node.eks.aws
+
+---
+apiVersion: node.eks.aws/v1alpha1
+kind: NodeConfig
+spec:
+  cluster:
+    name: "${var.cluster_name}"
+    apiServerEndpoint: "${aws_eks_cluster.this.endpoint}"
+    certificateAuthority: "${aws_eks_cluster.this.certificate_authority[0].data}"
+    cidr: "172.20.0.0/16"
+
+--BOUNDARY--
+EOF
+)
 
   tag_specifications {
     resource_type = "instance"
