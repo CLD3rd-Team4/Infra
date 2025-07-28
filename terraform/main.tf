@@ -207,11 +207,11 @@ module "acm_image" {
 }
 
 
-module "ecr_backend" {
-  source        = "./modules/ecr"
-  name          = "backend"
-  common_prefix = local.common_prefix
-  common_tags   = local.common_tags
+module "ecr_repositories" {
+  source           = "./modules/ecr"
+  repository_names = ["auth", "config", "review", "recommend", "schedule", "gateway"]
+  common_prefix    = local.common_prefix
+  common_tags      = local.common_tags
 }
 
 # 퍼블릭 라우팅 테이블 모듈
@@ -246,38 +246,63 @@ module "eks" {
   subnet_ids          = module.private_subnets.subnet_ids
   vpc_id              = module.vpc.vpc_id
   public_access_cidrs = ["0.0.0.0/0"]
-  common_prefix = local.common_prefix
-  common_tags   = local.common_tags
+  ami_id              = var.ami_id
+  eks_key_pair        = var.eks_key_pair
+  common_prefix       = local.common_prefix
+  common_tags         = local.common_tags
 }
 
-# ACM VPN 인증서 모듈 (Private CA 대신 로컬 인증서 사용)
-module "acm_vpn" {
-  source = "./modules/acm-vpn"
-  
-  # 인증서 내용을 변수로 전달 (Terraform Cloud Variables에서 설정)
-  server_cert_body    = var.vpn_server_cert_body
-  server_private_key  = var.vpn_server_private_key
-  ca_cert_body        = var.vpn_ca_cert_body
-  ca_private_key      = var.vpn_ca_private_key
-  client_certs        = var.vpn_client_certs
-  
-  common_prefix = local.common_prefix
-  common_tags   = local.common_tags
-}
 
-# Client VPN 모듈
+# Client VPN
 module "client_vpn" {
-  source                    = "./modules/network/clientvpn"
-  vpc_id                    = module.vpc.vpc_id
-  vpc_cidr                 = module.vpc.vpc_cidr
-  subnet_ids               = module.private_subnets.subnet_ids
-  client_cidr_block        = "172.16.0.0/22"  # VPC CIDR과 겹치지 않는 범위
-  server_certificate_arn    = module.acm_vpn.server_certificate_arn
-  root_certificate_chain_arn = module.acm_vpn.ca_certificate_arn
-  common_prefix            = local.common_prefix
-  common_tags              = local.common_tags
-  description             = "${local.common_prefix} Client VPN"
+  source = "./modules/network/clientvpn"
+
+  name                    = "${local.common_prefix}-client-vpn"
+  description             = "Client VPN for ${var.service_name}"
+  vpc_id                  = module.vpc.vpc_id
+  subnet_ids              = module.private_subnets.subnet_ids
+  client_cidr_block       = "172.16.0.0/22"
+  # 테라폼 실행 전에 acm 인증서 올리고 환경 변수로 설정해야 하는 변수들
+  server_certificate_arn  = var.vpn_server_certificate_arn
+  root_ca_certificate_arn = var.vpn_root_ca_certificate_arn
+  
+  # DNS 설정
+  dns_servers = ["8.8.8.8", "8.8.4.4"]
+  split_tunnel = true
+  
+  # 인증 규칙
+  authorization_rules = [
+    {
+      target_network_cidr  = module.vpc.vpc_cidr_block
+      authorize_all_groups = true
+      description          = "Allow access to VPC"
+    }
+  ]
+  
+  # 라우팅 규칙
+  routes = [
+    {
+      destination_cidr_block = module.vpc.vpc_cidr_block
+      target_vpc_subnet_id   = module.private_subnets.subnet_ids[0]
+      description            = "Route to VPC"
+    }
+  ]
+  
+  # 보안 그룹 규칙
+  security_group_ingress_rules = [
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "HTTPS access"
+    }
+  ]
+  
+  tags = local.common_tags
 }
+
+
 
 module "iam" {
   source = "./modules/iam"
@@ -424,4 +449,65 @@ resource "aws_route_table_association" "private_subnet_assoc" {
 
   subnet_id      = each.value
   route_table_id = module.private_route_table.route_table_id
+}
+
+
+
+data "aws_caller_identity" "current" {}
+
+module "github_oidc_role" {
+  source = "./modules/github_oidc_role"
+
+  role_name           = "${local.common_prefix}GitHubActionsOIDCRole"
+  github_repo_pattern = "repo:CLD3rd-Team4/App:*"
+  inline_policies = [
+    {
+      name = "${local.common_prefix}app-github-actions-policy"
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Effect = "Allow"
+            Action = [
+              "s3:PutObject",
+              "s3:PutObjectAcl",
+              "s3:DeleteObject",
+              "s3:GetObject",
+              "s3:ListBucket"
+            ]
+            Resource = [
+              "arn:aws:s3:::${module.s3_website_bucket.bucket_name}",
+              "arn:aws:s3:::${module.s3_website_bucket.bucket_name}/*"
+            ]
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "cloudfront:CreateInvalidation"
+            ]
+            Resource = module.cloudfront.distribution_arn
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "ecr:GetAuthorizationToken"
+            ]
+            Resource = "*"
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "ecr:BatchCheckLayerAvailability",
+              "ecr:CompleteLayerUpload",
+              "ecr:GetDownloadUrlForLayer",
+              "ecr:InitiateLayerUpload",
+              "ecr:PutImage",
+              "ecr:UploadLayerPart"
+            ]
+            Resource = "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/*"
+          }
+        ]
+      })
+    }
+  ]
 }

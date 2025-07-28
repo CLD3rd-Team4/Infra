@@ -29,3 +29,11 @@ variable "vpc_id" {
 variable "public_access_cidrs" {
   type        = list(string)
 }
+
+variable "ami_id" {
+  type        = string
+}
+
+variable "eks_key_pair" {
+  type        = string
+}

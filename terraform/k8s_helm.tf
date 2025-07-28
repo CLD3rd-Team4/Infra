@@ -134,7 +134,7 @@ module "argocd_application_schedule" {
   source_path         = "argocd/service-schedule"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 module "argocd_application_recommend" {
@@ -145,7 +145,7 @@ module "argocd_application_recommend" {
   source_path         = "argocd/service-recommend"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 module "argocd_application_review" {
@@ -156,7 +156,7 @@ module "argocd_application_review" {
   source_path         = "argocd/service-review"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 module "argocd_application_platform" {
@@ -167,7 +167,7 @@ module "argocd_application_platform" {
   source_path         = "argocd/service-platform"
   repo_url            = "https://github.com/CLD3rd-Team4/Infra"
 
-  depends_on = [helm_release.argocd]
+  depends_on = [module.eks, helm_release.argocd]
 }
 
 
@@ -217,7 +217,7 @@ resource "helm_release" "kube_ops_view" {
     }
   ]
   timeout    = 600
-  depends_on = [ helm_release.aws_load_balancer_controller, helm_release.external-dns ]
+  depends_on = [ module.eks, helm_release.aws_load_balancer_controller, helm_release.external-dns ]
 }
 
 
@@ -263,6 +263,7 @@ resource "kubernetes_namespace" "service-review" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
 }
 
 resource "kubernetes_namespace" "service-recommend" {
@@ -272,6 +273,7 @@ resource "kubernetes_namespace" "service-recommend" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
 }
 resource "kubernetes_namespace" "service-schedule" {
   metadata {
@@ -280,6 +282,7 @@ resource "kubernetes_namespace" "service-schedule" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
 }
 resource "kubernetes_namespace" "service-platform" {
   metadata {
@@ -288,6 +291,17 @@ resource "kubernetes_namespace" "service-platform" {
       "istio-injection" = "enabled"
     }
   }
+  depends_on = [module.eks]
+}
+
+resource "kubernetes_namespace" "monitoring" {
+  metadata {
+    name = "monitoring"
+    labels = {
+      "istio-injection" = "enabled"
+    }
+  }
+  depends_on = [module.eks]
 }
 
 
@@ -316,461 +330,461 @@ resource "helm_release" "istio_base" {
   depends_on = [module.eks]
 }
 
-# # Istio - Jaeger 설치
-# resource "kubernetes_deployment" "jaeger" {
-#   metadata {
-#     name      = "jaeger"
-#     namespace = "istio-system"
-#     labels = {
-#       app = "jaeger"
-#     }
-#   }
+# Istio - Jaeger 설치
+resource "kubernetes_deployment" "jaeger" {
+  metadata {
+    name      = "jaeger"
+    namespace = "istio-system"
+    labels = {
+      app = "jaeger"
+    }
+  }
 
-#   spec {
-#     selector {
-#       match_labels = {
-#         app = "jaeger"
-#       }
-#     }
+  spec {
+    selector {
+      match_labels = {
+        app = "jaeger"
+      }
+    }
 
-#     template {
-#       metadata {
-#         labels = {
-#           app                          = "jaeger"
-#           "sidecar.istio.io/inject"    = "false"
-#         }
-#         annotations = {
-#           "prometheus.io/scrape" = "true"
-#           "prometheus.io/port"   = "14269"
-#         }
-#       }
+    template {
+      metadata {
+        labels = {
+          app                          = "jaeger"
+          "sidecar.istio.io/inject"    = "false"
+        }
+        annotations = {
+          "prometheus.io/scrape" = "true"
+          "prometheus.io/port"   = "14269"
+        }
+      }
 
-#       spec {
-#         container {
-#           name  = "jaeger"
-#           image = "docker.io/jaegertracing/all-in-one:1.67.0"
+      spec {
+        container {
+          name  = "jaeger"
+          image = "docker.io/jaegertracing/all-in-one:1.67.0"
 
-#           env {
-#             name  = "BADGER_EPHEMERAL"
-#             value = "false"
-#           }
-#           env {
-#             name  = "SPAN_STORAGE_TYPE"
-#             value = "badger"
-#           }
-#           env {
-#             name  = "BADGER_DIRECTORY_VALUE"
-#             value = "/badger/data"
-#           }
-#           env {
-#             name  = "BADGER_DIRECTORY_KEY"
-#             value = "/badger/key"
-#           }
-#           env {
-#             name  = "COLLECTOR_ZIPKIN_HOST_PORT"
-#             value = ":9411"
-#           }
-#           env {
-#             name  = "MEMORY_MAX_TRACES"
-#             value = "50000"
-#           }
-#           env {
-#             name  = "QUERY_BASE_PATH"
-#             value = "/jaeger"
-#           }
+          env {
+            name  = "BADGER_EPHEMERAL"
+            value = "false"
+          }
+          env {
+            name  = "SPAN_STORAGE_TYPE"
+            value = "badger"
+          }
+          env {
+            name  = "BADGER_DIRECTORY_VALUE"
+            value = "/badger/data"
+          }
+          env {
+            name  = "BADGER_DIRECTORY_KEY"
+            value = "/badger/key"
+          }
+          env {
+            name  = "COLLECTOR_ZIPKIN_HOST_PORT"
+            value = ":9411"
+          }
+          env {
+            name  = "MEMORY_MAX_TRACES"
+            value = "50000"
+          }
+          env {
+            name  = "QUERY_BASE_PATH"
+            value = "/jaeger"
+          }
 
-#           liveness_probe {
-#             http_get {
-#               path = "/"
-#               port = 14269
-#             }
-#           }
+          liveness_probe {
+            http_get {
+              path = "/"
+              port = 14269
+            }
+          }
 
-#           readiness_probe {
-#             http_get {
-#               path = "/"
-#               port = 14269
-#             }
-#           }
+          readiness_probe {
+            http_get {
+              path = "/"
+              port = 14269
+            }
+          }
 
-#           volume_mount {
-#             name       = "data"
-#             mount_path = "/badger"
-#           }
+          volume_mount {
+            name       = "data"
+            mount_path = "/badger"
+          }
 
-#           resources {
-#             requests = {
-#               cpu = "10m"
-#             }
-#           }
-#         }
+          resources {
+            requests = {
+              cpu = "10m"
+            }
+          }
+        }
 
-#         volume {
-#           name = "data"
-#           empty_dir {}
-#         }
-#       }
-#     }
-#   }
-#   depends_on = [helm_release.istio_base]
-# }
+        volume {
+          name = "data"
+          empty_dir {}
+        }
+      }
+    }
+  }
+  depends_on = [module.eks, helm_release.istio_base]
+}
 
-# # Istio - Jaeger - tracing 서비스 (UI 및 GRPC)
-# resource "kubernetes_service" "jaeger_tracing" {
-#   metadata {
-#     name      = "tracing"
-#     namespace = "istio-system"
-#     labels = {
-#       app = "jaeger"
-#     }
-#   }
+# Istio - Jaeger - tracing 서비스 (UI 및 GRPC)
+resource "kubernetes_service" "jaeger_tracing" {
+  metadata {
+    name      = "tracing"
+    namespace = "istio-system"
+    labels = {
+      app = "jaeger"
+    }
+  }
 
-#   spec {
-#     type = "ClusterIP"
+  spec {
+    type = "ClusterIP"
 
-#     selector = {
-#       app = "jaeger"
-#     }
+    selector = {
+      app = "jaeger"
+    }
 
-#     port {
-#       name        = "http-query"
-#       port        = 80
-#       target_port = 16686
-#     }
+    port {
+      name        = "http-query"
+      port        = 80
+      target_port = 16686
+    }
 
-#     port {
-#       name        = "grpc-query"
-#       port        = 16685
-#       target_port = 16685
-#     }
-#   }
+    port {
+      name        = "grpc-query"
+      port        = 16685
+      target_port = 16685
+    }
+  }
 
-#   depends_on = [kubernetes_deployment.jaeger]
-# }
+  depends_on = [module.eks, kubernetes_deployment.jaeger]
+}
 
-# # Istio - Jaeger - zipkin 서비스 (호환용)
-# resource "kubernetes_service" "zipkin" {
-#   metadata {
-#     name      = "zipkin"
-#     namespace = "istio-system"
-#     labels = {
-#       name = "zipkin"
-#     }
-#   }
+# Istio - Jaeger - zipkin 서비스 (호환용)
+resource "kubernetes_service" "zipkin" {
+  metadata {
+    name      = "zipkin"
+    namespace = "istio-system"
+    labels = {
+      name = "zipkin"
+    }
+  }
 
-#   spec {
-#     selector = {
-#       app = "jaeger"
-#     }
+  spec {
+    selector = {
+      app = "jaeger"
+    }
 
-#     port {
-#       name        = "http-query"
-#       port        = 9411
-#       target_port = 9411
-#     }
-#   }
+    port {
+      name        = "http-query"
+      port        = 9411
+      target_port = 9411
+    }
+  }
 
-#   depends_on = [kubernetes_deployment.jaeger]
-# }
+  depends_on = [module.eks, kubernetes_deployment.jaeger]
+}
 
-# # Istio - Jaeger - jaeger-collector 서비스
-# resource "kubernetes_service" "jaeger_collector" {
-#   metadata {
-#     name      = "jaeger-collector"
-#     namespace = "istio-system"
-#     labels = {
-#       app = "jaeger"
-#     }
-#   }
+# Istio - Jaeger - jaeger-collector 서비스
+resource "kubernetes_service" "jaeger_collector" {
+  metadata {
+    name      = "jaeger-collector"
+    namespace = "istio-system"
+    labels = {
+      app = "jaeger"
+    }
+  }
 
-#   spec {
-#     type = "ClusterIP"
+  spec {
+    type = "ClusterIP"
 
-#     selector = {
-#       app = "jaeger"
-#     }
+    selector = {
+      app = "jaeger"
+    }
 
-#     port {
-#       name        = "jaeger-collector-http"
-#       port        = 14268
-#       target_port = 14268
-#     }
+    port {
+      name        = "jaeger-collector-http"
+      port        = 14268
+      target_port = 14268
+    }
 
-#     port {
-#       name        = "jaeger-collector-grpc"
-#       port        = 14250
-#       target_port = 14250
-#     }
+    port {
+      name        = "jaeger-collector-grpc"
+      port        = 14250
+      target_port = 14250
+    }
 
-#     port {
-#       name        = "http-zipkin"
-#       port        = 9411
-#       target_port = 9411
-#     }
+    port {
+      name        = "http-zipkin"
+      port        = 9411
+      target_port = 9411
+    }
 
-#     port {
-#       name        = "grpc-otel"
-#       port        = 4317
-#       target_port = 4317
-#     }
+    port {
+      name        = "grpc-otel"
+      port        = 4317
+      target_port = 4317
+    }
 
-#     port {
-#       name        = "http-otel"
-#       port        = 4318
-#       target_port = 4318
-#     }
-#   }
+    port {
+      name        = "http-otel"
+      port        = 4318
+      target_port = 4318
+    }
+  }
 
-#   depends_on = [kubernetes_deployment.jaeger]
-# }
+  depends_on = [module.eks, kubernetes_deployment.jaeger]
+}
 
 
-# resource "helm_release" "istiod" {
-#   name       = "istiod"
-#   namespace  = "istio-system"
-#   create_namespace = true
-#   repository = "https://istio-release.storage.googleapis.com/charts"
-#   chart      = "istiod"
-#   version    = "1.26.2"
+resource "helm_release" "istiod" {
+  name       = "istiod"
+  namespace  = "istio-system"
+  create_namespace = true
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  chart      = "istiod"
+  version    = "1.26.2"
 
-#   set = [
-#     {
-#       name  = "global.meshID" # 멀티클러스터 구성 시 mesh ID는 동일하게 설정
-#       value = "multicluster-mesh"
-#     },
-#     {
-#       name  = "global.multiCluster.clusterName" # 멀티클러스터 구성 시 각 클러스터 고유 ID
-#       value = "cluster1"
-#     },
-#     {
-#       name  = "global.network" 
-#       value = "network1" # 로컬은 network2
-#     },
-#     {
-#       name  = "meshConfig.enableTracing"
-#       value = "true"
-#     },
-#     {
-#       name  = "meshConfig.defaultConfig.tracing.stackdriver.debug"
-#       value = "false" # zipkin으로 jaeger설정하는 레거시 방식 비활성화 
-#     },
-#     {
-#       name  = "meshConfig.extensionProviders[0].name"
-#       value = "jaeger"
-#     },
-#     {
-#       name  = "meshConfig.extensionProviders[0].opentelemetry.service"
-#       value = "jaeger-collector.istio-system.svc.cluster.local"
-#     },
-#     {
-#       name  = "meshConfig.extensionProviders[0].opentelemetry.port"
-#       value = "4317"
-#     }
-#   ]
+  set = [
+    {
+      name  = "global.meshID" # 멀티클러스터 구성 시 mesh ID는 동일하게 설정
+      value = "multicluster-mesh"
+    },
+    {
+      name  = "global.multiCluster.clusterName" # 멀티클러스터 구성 시 각 클러스터 고유 ID
+      value = "cluster1"
+    },
+    {
+      name  = "global.network" 
+      value = "network1" # 로컬은 network2
+    },
+    {
+      name  = "meshConfig.enableTracing"
+      value = "true"
+    },
+    {
+      name  = "meshConfig.extensionProviders[0].name"
+      value = "jaeger"
+    },
+    {
+      name  = "meshConfig.extensionProviders[0].opentelemetry.service"
+      value = "jaeger-collector.istio-system.svc.cluster.local"
+    },
+    {
+      name  = "meshConfig.extensionProviders[0].opentelemetry.port"
+      value = "4317"
+    }
+  ]
 
-#   depends_on = [module.eks, helm_release.istio_base]
-# }
+  depends_on = [module.eks, helm_release.istio_base]
+}
 
-# resource "helm_release" "istio_ingress" {
-#   name       = "istio-ingressgateway"
-#   namespace  = "istio-system"
-#   create_namespace = true
-#   repository = "https://istio-release.storage.googleapis.com/charts"
-#   chart      = "gateway"
-#   version    = "1.26.2"
+resource "helm_release" "istio_ingress" {
+  name       = "istio-ingressgateway"
+  namespace  = "istio-system"
+  create_namespace = true
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  chart      = "gateway"
+  version    = "1.26.2"
 
-#   set = [
-#     {
-#       name  = "service.type"
-#       value = "NodePort"
-#     }
-#   ]
+  set = [
+    {
+      name  = "service.type"
+      value = "NodePort"
+    }
+  ]
 
-#   depends_on = [helm_release.istiod]
-# }
+  depends_on = [module.eks, helm_release.istiod]
+}
 
-# resource "kubernetes_ingress_v1" "istio_alb_ingress" {
-#   metadata {
-#     name      = "istio-alb-ingress"
-#     namespace = "istio-ingress"
+resource "kubernetes_ingress_v1" "istio_alb_ingress" {
+  metadata {
+    name      = "istio-alb-ingress"
+    namespace = "istio-ingress"
 
-#     annotations = {
-#       "kubernetes.io/ingress.class"                    = "alb"
-#       "alb.ingress.kubernetes.io/healthcheck-path"     = "/healthz/ready"
-#       "alb.ingress.kubernetes.io/healthcheck-port"     = "traffic-port"
-#       "alb.ingress.kubernetes.io/certificate-arn"      = module.acm_backend.certificate_arn
-#       "alb.ingress.kubernetes.io/listen-ports"         = jsonencode([
-#         { "HTTP" = 80 },
-#         { "HTTPS" = 443 }
-#       ])
-#       "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
-#       "alb.ingress.kubernetes.io/actions.ssl-redirect" = jsonencode({
-#         Type           = "redirect"
-#         RedirectConfig = {
-#           Protocol   = "HTTPS"
-#           Port       = "443"
-#           StatusCode = "HTTP_301"
-#         }
-#       })
-#       "external-dns.alpha.kubernetes.io/hostname"       = "api.${var.service_domain}"
-#       "alb.ingress.kubernetes.io/tags"  = "Environment=${terraform.workspace},Provisioner=Kubernetes"
-#     }
+    annotations = {
+      "kubernetes.io/ingress.class"                    = "alb"
+      "alb.ingress.kubernetes.io/healthcheck-path"     = "/healthz/ready"
+      "alb.ingress.kubernetes.io/healthcheck-port"     = "traffic-port"
+      "alb.ingress.kubernetes.io/certificate-arn"      = module.acm_backend.certificate_arn
+      "alb.ingress.kubernetes.io/listen-ports"         = jsonencode([
+        { "HTTP" = 80 },
+        { "HTTPS" = 443 }
+      ])
+      "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
+      "alb.ingress.kubernetes.io/actions.ssl-redirect" = jsonencode({
+        Type           = "redirect"
+        RedirectConfig = {
+          Protocol   = "HTTPS"
+          Port       = "443"
+          StatusCode = "HTTP_301"
+        }
+      })
+      "external-dns.alpha.kubernetes.io/hostname"       = "api.${var.service_domain}"
+      "alb.ingress.kubernetes.io/tags"  = "Environment=${terraform.workspace},Provisioner=Kubernetes"
+    }
 
-#     labels = {
-#       app     = "Istio"
-#       ingress = "Istio"
-#     }
-#   }
+    labels = {
+      app     = "Istio"
+      ingress = "Istio"
+    }
+  }
 
-#   spec {
-#     rule {
-#       http {
-#         path {
-#           path     = "/*"
-#           path_type = "ImplementationSpecific"
-#           backend {
-#             service {
-#               name = "ssl-redirect"
-#               port {
-#                 name = "use-annotation"
-#               }
-#             }
-#           }
-#         }
+  spec {
+    rule {
+      http {
+        path {
+          path     = "/*"
+          path_type = "ImplementationSpecific"
+          backend {
+            service {
+              name = "ssl-redirect"
+              port {
+                name = "use-annotation"
+              }
+            }
+          }
+        }
 
-#         path {
-#           path     = "/healthz/ready"
-#           path_type = "ImplementationSpecific"
-#           backend {
-#             service {
-#               name = "istio-ingressgateway"
-#               port {
-#                 number = 15021
-#               }
-#             }
-#           }
-#         }
+        path {
+          path     = "/healthz/ready"
+          path_type = "ImplementationSpecific"
+          backend {
+            service {
+              name = "istio-ingressgateway"
+              port {
+                number = 15021
+              }
+            }
+          }
+        }
 
-#         path {
-#           path     = "/*"
-#           path_type = "ImplementationSpecific"
-#           backend {
-#             service {
-#               name = "istio-ingressgateway"
-#               port {
-#                 number = 80
-#               }
-#             }
-#           }
-#         }
-#       }
-#     }
-#   }
+        path {
+          path     = "/*"
+          path_type = "ImplementationSpecific"
+          backend {
+            service {
+              name = "istio-ingressgateway"
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
-#   depends_on = [helm_release.istio_ingress, helm_release.aws_load_balancer_controller, helm_release.external-dns]
-# }
+  depends_on = [module.eks, helm_release.istio_ingress, helm_release.aws_load_balancer_controller, helm_release.external-dns]
+}
 
-# # 멀티클러스터간 사이드카 mTLS용 게이트웨이
-# resource "kubernetes_manifest" "istio_crossnetwork_gateway" {
-#   count = var.is_crd_dependent_phase ? 1 : 0
-#   manifest = {
-#     apiVersion = "networking.istio.io/v1alpha3"
-#     kind       = "Gateway"
-#     metadata = {
-#       name      = "cross-network-gateway"
-#       namespace = "istio-system"
-#     }
-#     spec = {
-#       selector = {
-#         app = "istio-crossnetworkgateway"
-#       }
-#       servers = [
-#         {
-#           port = {
-#             number   = 15443
-#             name     = "tls"
-#             protocol = "TLS"
-#           }
-#           tls = {
-#             mode = "AUTO_PASSTHROUGH"
-#           }
-#           hosts = ["*.local"]
-#         }
-#       ]
-#     }
-#   }
+# 멀티클러스터간 사이드카 mTLS용 게이트웨이
+resource "kubernetes_manifest" "istio_crossnetwork_gateway" {
+  count = var.is_crd_dependent_phase ? 1 : 0
+  manifest = {
+    apiVersion = "networking.istio.io/v1alpha3"
+    kind       = "Gateway"
+    metadata = {
+      name      = "cross-network-gateway"
+      namespace = "istio-system"
+    }
+    spec = {
+      selector = {
+        app = "istio-crossnetworkgateway"
+      }
+      servers = [
+        {
+          port = {
+            number   = 15443
+            name     = "tls"
+            protocol = "TLS"
+          }
+          tls = {
+            mode = "AUTO_PASSTHROUGH"
+          }
+          hosts = ["*.local"]
+        }
+      ]
+    }
+  }
 
-#   depends_on = [helm_release.istiod]
-# }
+  depends_on = [module.eks, helm_release.istiod]
+}
 
-# # 멀티클러스터 설정된 후에 해야함
-# resource "helm_release" "prometheus" {
-#   name       = "prometheus"
-#   namespace  = "monitoring"
-#   create_namespace = true
-#   repository = "https://prometheus-community.github.io/helm-charts"
-#   chart      = "prometheus"
-#   version    = "27.28.1"
+# 멀티클러스터 설정된 후에 해야함
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  namespace  = "monitoring"
+  create_namespace = true
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "prometheus"
+  version    = "27.28.1"
 
-#   set = [
-#     {
-#       name  = "global.scrape_interval"
-#       value = "15s"
-#     },
-#     {
-#       name  = "server.retention"
-#       value = var.prometheus_retention
-#     },
-#     {
-#       name  = "server.service.type"
-#       value = "LoadBalancer"
-#     },
-#     {
-#       name  = "server.service.annotations.external-dns\\.alpha\\.kubernetes\\.io/hostname"
-#       value = "prometheus.${var.service_domain}"
-#     },
-#     {
-#       name  = "server.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
-#       value = "internal"
-#     }
-#   ]
+  set = [
+    {
+      name  = "global.scrape_interval"
+      value = "15s"
+    },
+    {
+      name  = "server.retention"
+      value = var.prometheus_retention
+    },
+    {
+      name  = "server.service.type"
+      value = "LoadBalancer"
+    },
+    {
+      name  = "server.service.annotations.external-dns\\.alpha\\.kubernetes\\.io/hostname"
+      value = "prometheus.${var.service_domain}"
+    },
+    {
+      name  = "server.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
+      value = "internal"
+    },
+    {
+      name = "server.persistentVolume.storageClass"
+      value = "gp2"
+    }
+  ]
 
-#   values = [
-#     file("values/prometheus-values.yaml")
-#   ]
+  values = [
+    file("values/prometheus-values.yaml")
+  ]
 
-#   depends_on = [helm_release.external-dns, helm_release.istiod, helm_release.aws_load_balancer_controller]
+  depends_on = [module.eks, helm_release.external-dns, helm_release.istiod, helm_release.aws_load_balancer_controller]
   
-# }
+}
 
 
 
-# resource "kubernetes_manifest" "istio_telemetry" {
-#   count = var.is_crd_dependent_phase ? 1 : 0
-#   manifest = {
-#     apiVersion = "telemetry.istio.io/v1"
-#     kind       = "Telemetry"
-#     metadata = {
-#       name      = "mesh-default"
-#       namespace = "istio-system"
-#     }
-#     spec = {
-#       tracing = [
-#         {
-#           # 100 = 모든 요청을 추적, 50 = 절반만 추적, 1 = 1%만 추적(100번 요청 중 1개만 기록)
-#           randomSamplingPercentage = var.tracing_sampling_percentage 
-#           providers = [
-#             {
-#               name = "jaeger"
-#             }
-#           ]
-#         }
-#       ]
-#     }
-#   }
+resource "kubernetes_manifest" "istio_telemetry" {
+  count = var.is_crd_dependent_phase ? 1 : 0
+  manifest = {
+    apiVersion = "telemetry.istio.io/v1"
+    kind       = "Telemetry"
+    metadata = {
+      name      = "mesh-default"
+      namespace = "istio-system"
+    }
+    spec = {
+      tracing = [
+        {
+          # 100 = 모든 요청을 추적, 50 = 절반만 추적, 1 = 1%만 추적(100번 요청 중 1개만 기록)
+          randomSamplingPercentage = var.tracing_sampling_percentage 
+          providers = [
+            {
+              name = "jaeger"
+            }
+          ]
+        }
+      ]
+    }
+  }
 
-#   depends_on = [helm_release.istiod]
-# }
+  depends_on = [module.eks, helm_release.istiod]
+}
 
 
 # Fluent Bit 설치는 멀티클러스터 연결 후에 진행

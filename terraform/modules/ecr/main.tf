@@ -1,12 +1,13 @@
-resource "aws_ecr_repository" "this" {
-  name = "${var.common_prefix}ecr-${var.name}"
+resource "aws_ecr_repository" "repositories" {
+  for_each = toset(var.repository_names)
+  name     = "${var.common_prefix}ecr-${each.value}"
 
   image_scanning_configuration {
     scan_on_push = true
   }
 
   tags = merge(var.common_tags, {
-    Name = "${var.common_prefix}ecr-${var.name}"
+    Name = "${var.common_prefix}ecr-${each.value}"
   })
 }
 terraform {
