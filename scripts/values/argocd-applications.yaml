@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-schedule
+  namespace: argocd
+spec:
+  destination:
+    namespace: service-schedule
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/service-schedule
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-recommend
+  namespace: argocd
+spec:
+  destination:
+    namespace: service-recommend
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/service-recommend
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-review
+  namespace: argocd
+spec:
+  destination:
+    namespace: service-review
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/service-review
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-platform
+  namespace: argocd
+spec:
+  destination:
+    namespace: service-platform
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/service-platform
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
