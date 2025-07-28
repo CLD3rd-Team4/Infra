@@ -34,7 +34,7 @@ resource "aws_eks_node_group" "this" {
 
   launch_template {
     id      = aws_launch_template.eks_lt.id
-    version = "$Latest"
+    version = aws_launch_template.eks_lt.latest_version
   }
 
   scaling_config {
