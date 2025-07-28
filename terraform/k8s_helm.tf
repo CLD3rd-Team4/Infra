@@ -845,7 +845,10 @@ data:
 EOF
   }
 
-  depends_on = [helm_release.sealed_secrets]
+  depends_on = [
+    helm_release.sealed_secrets,
+    random_password.config_encrypt_key
+  ]
 }
 
 # SealedSecret 생성 Job
@@ -907,8 +910,11 @@ resource "kubernetes_job_v1" "create_sealed_secrets" {
   }
 
   depends_on = [
+    helm_release.sealed_secrets,
     kubernetes_config_map.secret_templates,
-    kubernetes_service_account.sealed_secrets_job
+    kubernetes_service_account.sealed_secrets_job,
+    kubernetes_cluster_role.sealed_secrets_job,
+    kubernetes_cluster_role_binding.sealed_secrets_job
   ]
 }
 
