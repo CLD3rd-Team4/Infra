@@ -116,42 +116,15 @@ variable "is_crd_dependent_phase" {
 }
 
 # VPN 인증서 변수들
-variable "vpn_server_cert_body" {
-  description = "VPN server certificate body (PEM format)"
+variable "vpn_server_certificate_arn" {
+  description = "ARN of the server certificate for the VPN"
   type        = string
-  sensitive   = true
-  default     = ""
 }
 
-variable "vpn_server_private_key" {
-  description = "VPN server private key (PEM format)"
+variable "vpn_root_ca_certificate_arn" {
+  description = "ARN of the root CA certificate for the VPN"
   type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "vpn_ca_cert_body" {
-  description = "VPN CA certificate body (PEM format)"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "vpn_ca_private_key" {
-  description = "VPN CA private key (PEM format)"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "vpn_client_certs" {
-  description = "Map of VPN client certificates by team member name"
-  type = map(object({
-    cert_body   = string
-    private_key = string
-  }))
-  sensitive = true
-  default   = {}
+  default     = null
 }
 
 variable "eks_key_pair" {

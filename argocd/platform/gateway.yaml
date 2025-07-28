@@ -1,0 +1,115 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: spring-gateway-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "api.mapzip.shop"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: spring-gateway-vs
+spec:
+  hosts:
+  - "api.mapzip.shop"
+  gateways:
+  - spring-gateway-gateway
+  http:
+  - route:
+    - destination:
+        host: gateway.service-platform.svc.cluster.local
+        port:
+          number: 8080
+    retries:
+      attempts: 5
+      perTryTimeout: 5s
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+spec:
+  selector:
+    app.kubernetes.io/name: spring-gateway
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: spring-gateway-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: spring-gateway-deployment
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-gateway-deployment
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spring-gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spring-gateway
+    spec:
+      containers:
+      - name: spring-gateway-container
+        image: example/spring-gateway:95e42ba
+        ports:
+        - protocol: TCP
+          containerPort: 8080
+        
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
