@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude config get hasTrustDialogAccepted)",
+      "Bash(echo $APPDATA)",
+      "Bash(claude config set model \"sonnet\")",
+      "Bash(claude config set --global model \"opus\")",
+      "Bash(claude config list --global)",
+      "Bash(claude --model opus --print \"test\")",
+      "Bash(claude --model sonnet --print \"What model are you using?\")",
+      "Bash(echo $HOME)",
+      "Bash(ls:*)",
+      "Bash(claude --settings \"C:\\Users\\cho\\claude-settings.json\" --print \"What model are you using?\")",
+      "Bash(claude --print \"What subscription plan do I have and what models are available to me?\")"
+    ],
+    "deny": []
+  }
+}

@@ -44,5 +44,5 @@ variable "num_cache_nodes" {
 variable "parameter_group_name" {
   description = "The parameter group for the ElastiCache cluster"
   type        = string
-  default     = "default.redis7"
+  default     = "default.valkey8"
 }
