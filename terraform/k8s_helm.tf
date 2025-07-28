@@ -602,7 +602,7 @@ resource "helm_release" "istio_ingress" {
 resource "kubernetes_ingress_v1" "istio_alb_ingress" {
   metadata {
     name      = "istio-alb-ingress"
-    namespace = "istio-ingress"
+    namespace = "istio-system"
 
     annotations = {
       "kubernetes.io/ingress.class"                    = "alb"
