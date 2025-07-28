@@ -713,7 +713,7 @@ resource "kubernetes_manifest" "istio_crossnetwork_gateway" {
   depends_on = [module.eks, helm_release.istiod]
 }
 
-# 멀티클러스터 설정된 후에 해야함
+
 resource "helm_release" "prometheus" {
   name       = "prometheus"
   namespace  = "monitoring"
@@ -745,6 +745,10 @@ resource "helm_release" "prometheus" {
     },
     {
       name = "server.persistentVolume.storageClass"
+      value = "gp2"
+    },
+    {
+      name  = "alertmanager.persistentVolume.storageClass"
       value = "gp2"
     }
   ]
