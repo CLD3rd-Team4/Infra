@@ -62,41 +62,34 @@ GIT_USERNAME=your-username GIT_TOKEN=your-token ./setup-k8s-mac.sh
 
 ## Config Server Secrets
 
-Config Server가 사용하는 암호화된 Secret들은 메인 스크립트 실행 시 자동으로 생성됩니다.
+Config Server가 사용하는 암호화된 Secret들은 **ArgoCD가 SealedSecret으로 관리**합니다.
 
-### 자동 생성 (권장)
-
-**macOS/Linux:**
-```bash
-GIT_USERNAME=your-github-username GIT_TOKEN=your-github-token ./setup-k8s-mac.sh
-```
-
-**Windows:**
-```cmd
-set GIT_USERNAME=your-github-username
-set GIT_TOKEN=your-github-token
-setup-k8s-windows.bat
-```
-
-### 수동 생성 (kubeseal 필요)
+### SealedSecret 값 생성
 
 **macOS/Linux:**
 ```bash
-brew install kubeseal
-GIT_USERNAME=your-github-username GIT_TOKEN=your-github-token ./setup-k8s-mac.sh
+cd scripts
+chmod +x generate-sealed-secrets.sh
+GIT_USERNAME=your-github-username GIT_TOKEN=your-github-token ./generate-sealed-secrets.sh
 ```
 
 **Windows:**
-kubeseal을 [GitHub Releases](https://github.com/bitnami-labs/sealed-secrets/releases)에서 다운로드 후:
-```cmd
-set GIT_USERNAME=your-github-username
-set GIT_TOKEN=your-github-token
-setup-k8s-windows.bat
-```
+Windows에서는 macOS/Linux 환경에서 값을 생성하거나, WSL을 사용하세요.
 
-생성되는 Secret들:
+### 설정 방법
+
+1. **SealedSecret 값 생성**: 위 스크립트 실행
+2. **파일 수정**: `argocd/sealed-secrets.yaml`에서 REPLACE_WITH_* 부분을 생성된 값으로 교체
+3. **커밋 & 푸시**: Git에 커밋하고 푸시
+4. **자동 배포**: ArgoCD가 자동으로 SealedSecret을 배포
+
+### 관리되는 Secret들:
 - `config-server-encrypt-secret`: Config Server 암호화 키 (자동 생성)
 - `config-server-git-secret`: GitHub 인증 정보 (환경변수에서)
+
+### 파일 위치:
+- **SealedSecret 정의**: `argocd/sealed-secrets.yaml`
+- **Config Server 배포**: `argocd/platform/config.yaml`
 
 ## 설정 변수
 

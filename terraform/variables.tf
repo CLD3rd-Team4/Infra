@@ -121,15 +121,3 @@ variable "ami_id" {
   description = "AMI ID for EKS worker nodes"
   type        = string
 }
-# Config Server Git 인증 변수들
-variable "git_username" {
-  description = "Git username for Config Server"
-  type        = string
-  sensitive   = true
-}
-
-variable "git_token" {
-  description = "Git token for Config Server"
-  type        = string
-  sensitive   = true
-}
