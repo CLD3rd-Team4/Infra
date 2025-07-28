@@ -15,6 +15,16 @@ terraform {
       version = "~> 2.38.0"
     }
 
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.14.0"
+    }
+
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6.0"
+    }
+
     postgresql = {
       source  = "cyrilgdn/postgresql"
       version = "1.22.0"
@@ -54,4 +64,11 @@ provider "helm" {
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.cluster.token
   }
+}
+
+provider "kubectl" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
+  load_config_file       = false
 }

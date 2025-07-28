@@ -787,4 +787,174 @@ resource "kubernetes_manifest" "istio_telemetry" {
 }
 
 
+# SealedSecret Controller 설치
+resource "helm_release" "sealed_secrets" {
+  name       = "sealed-secrets"
+  namespace  = "kube-system"
+  repository = "https://bitnami-labs.github.io/sealed-secrets"
+  chart      = "sealed-secrets"
+  version    = "2.15.4"
+
+  depends_on = [module.eks]
+}
+
 # Fluent Bit 설치는 멀티클러스터 연결 후에 진행
+
+# ========================================
+# Config Server Secrets (SealedSecret via Kubernetes Job)
+# ========================================
+
+# Config Server 암호화 키 생성
+resource "random_password" "config_encrypt_key" {
+  length  = 32
+  special = true
+}
+
+# ConfigMap으로 Secret 템플릿 저장
+resource "kubernetes_config_map" "secret_templates" {
+  metadata {
+    name = "config-server-secret-templates"
+  }
+
+  data = {
+    "encrypt-secret.yaml" = <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: config-server-encrypt-secret
+  namespace: default
+type: Opaque
+data:
+  encrypt-key: ${base64encode(random_password.config_encrypt_key.result)}
+EOF
+
+    "git-secret.yaml" = <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: config-server-git-secret
+  namespace: default
+type: Opaque
+data:
+  username: ${base64encode(var.git_username)}
+  token: ${base64encode(var.git_token)}
+EOF
+  }
+
+  depends_on = [helm_release.sealed_secrets]
+}
+
+# SealedSecret 생성 Job
+resource "kubernetes_job_v1" "create_sealed_secrets" {
+  metadata {
+    name = "create-config-sealed-secrets"
+  }
+
+  spec {
+    template {
+      metadata {}
+      spec {
+        service_account_name = "sealed-secrets-job"
+        
+        container {
+          name  = "kubeseal"
+          image = "bitnami/sealed-secrets-controller:v0.24.0"
+          
+          command = ["/bin/sh"]
+          args = [
+            "-c",
+            <<-EOF
+            # Wait for sealed-secrets controller to be ready
+            until kubectl get crd sealedsecrets.bitnami.com; do
+              echo "Waiting for SealedSecret CRD..."
+              sleep 5
+            done
+            
+            # Create SealedSecrets
+            kubeseal -f /templates/encrypt-secret.yaml -w /tmp/encrypt-sealed.yaml
+            kubeseal -f /templates/git-secret.yaml -w /tmp/git-sealed.yaml
+            
+            # Apply SealedSecrets
+            kubectl apply -f /tmp/encrypt-sealed.yaml
+            kubectl apply -f /tmp/git-sealed.yaml
+            
+            echo "SealedSecrets created successfully"
+            EOF
+          ]
+
+          volume_mount {
+            name       = "secret-templates"
+            mount_path = "/templates"
+          }
+        }
+
+        volume {
+          name = "secret-templates"
+          config_map {
+            name = kubernetes_config_map.secret_templates.metadata[0].name
+          }
+        }
+
+        restart_policy = "OnFailure"
+      }
+    }
+    
+    backoff_limit = 3
+  }
+
+  depends_on = [
+    kubernetes_config_map.secret_templates,
+    kubernetes_service_account.sealed_secrets_job
+  ]
+}
+
+# Job용 ServiceAccount
+resource "kubernetes_service_account" "sealed_secrets_job" {
+  metadata {
+    name = "sealed-secrets-job"
+  }
+}
+
+# Job용 ClusterRole
+resource "kubernetes_cluster_role" "sealed_secrets_job" {
+  metadata {
+    name = "sealed-secrets-job"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["secrets"]
+    verbs      = ["create", "get", "list"]
+  }
+
+  rule {
+    api_groups = ["bitnami.com"]
+    resources  = ["sealedsecrets"]
+    verbs      = ["create", "get", "list"]
+  }
+
+  rule {
+    api_groups = ["apiextensions.k8s.io"]
+    resources  = ["customresourcedefinitions"]
+    verbs      = ["get", "list"]
+  }
+}
+
+# Job용 ClusterRoleBinding
+resource "kubernetes_cluster_role_binding" "sealed_secrets_job" {
+  metadata {
+    name = "sealed-secrets-job"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.sealed_secrets_job.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.sealed_secrets_job.metadata[0].name
+    namespace = "default"
+  }
+}
