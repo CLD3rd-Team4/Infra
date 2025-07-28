@@ -67,6 +67,13 @@ resource "aws_security_group" "aws_eks_node_group" {
   }
 
   ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["192.168.219.0/24"]
+  }
+
+  ingress {
     from_port       = 1025
     to_port         = 65535
     protocol        = "tcp"
