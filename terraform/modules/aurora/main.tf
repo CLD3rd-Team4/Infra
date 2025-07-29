@@ -69,6 +69,7 @@ resource "aws_rds_cluster" "this" {
   cluster_identifier      = "${var.common_prefix}${each.key}-db"
   engine                  = "aurora-postgresql"
   engine_mode             = "provisioned"
+  database_name           = "${each.key}_db"
   master_username         = var.db_master_username
   master_password         = var.db_master_password
   port                    = 5432
