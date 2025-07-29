@@ -202,6 +202,8 @@ helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --namespace 
 echo Waiting for Sealed Secrets Controller to be ready...
 kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-controller -n kube-system
 
+
+
 echo "========================================"
 echo "Setup completed successfully!"
 echo "========================================"

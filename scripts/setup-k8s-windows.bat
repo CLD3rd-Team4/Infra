@@ -70,14 +70,10 @@ kubectl label namespace monitoring istio-injection=enabled --overwrite
 kubectl label namespace istio-system topology.istio.io/network=network1 --overwrite
 
 REM 서브넷 ID 조회
-for /f "delims=" %%i in ('aws eks describe-cluster --name %CLUSTER_NAME% --query "cluster.resourcesVpcConfig.subnetIds[0]" --output text') do (
-    set SUBNET_ID=%%i
-)
+for /f "delims=" %%i in ('aws eks describe-cluster --name %CLUSTER_NAME% --query "cluster.resourcesVpcConfig.subnetIds[0]" --output text') do set "SUBNET_ID=%%i"
 
 REM VPC ID 조회
-for /f "delims=" %%i in ('aws ec2 describe-subnets --subnet-ids %SUBNET_ID% --query "Subnets[0].VpcId" --output text') do (
-    set VPC_ID=%%i
-)
+for /f "delims=" %%i in ('aws ec2 describe-subnets --subnet-ids %SUBNET_ID% --query "Subnets[0].VpcId" --output text') do set "VPC_ID=%%i"
 
 echo VPC ID is: %VPC_ID%
 
@@ -106,6 +102,9 @@ helm upgrade --install external-dns external-dns/external-dns ^
   --set env[0].value=%REGION% ^
   --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::%AWS_ID%:role/mapzip-dev-external-dns-irsa-role ^
   --set args[0]="--annotation-filter=external-dns.alpha.kubernetes.io/hostname" ^
+  --set args[1]="--policy=sync" ^
+  --set managedRecordTypes[0]=A ^
+  --set managedRecordTypes[1]=TXT ^
   --set domainFilters[0]=%SERVICE_DOMAIN% ^
   --version 1.18.0 ^
   --wait
@@ -179,6 +178,10 @@ helm upgrade --install istio-ingressgateway istio/gateway ^
   --version 1.26.2 ^
   --wait
 
+echo Installing Istio Cross Network Gateway...
+helm upgrade --install istio-crossnetworkgateway istio/gateway ^
+  -n istio-system --create-namespace --version 1.26.2
+
 echo Installing Prometheus...
 helm upgrade --install prometheus prometheus-community/prometheus ^
   --namespace monitoring ^
@@ -188,7 +191,8 @@ helm upgrade --install prometheus prometheus-community/prometheus ^
   --set server.service.annotations."external-dns\.alpha\.kubernetes\.io/hostname"=prometheus.%SERVICE_DOMAIN% ^
   --set server.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-scheme"=internal ^
   --set server.persistentVolume.storageClass=gp2 ^
-  --set alertmanager.persistentVolume.storageClass=gp2 ^
+  --set alertmanager.persistence.storageClass=gp2 ^
+  --set alertmanager.persistence.enabled=true ^
   --values ./values/prometheus-values.yaml ^
   --version 27.28.1 ^
   --wait
@@ -211,6 +215,11 @@ kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-
 echo Note: Config Server Secrets are now managed by ArgoCD via SealedSecrets
 echo To generate SealedSecret values, use generate-sealed-secrets.sh on macOS/Linux
 
+echo Creating Grafana configuration...
+
+REM Grafana 빠른설치에서 서비스- 로드밸런서, external-dns 설정 / 프로메테우스 데이터소스 주소 수정
+kubectl apply -f values/grafana.yaml
+
 echo ========================================
 echo Setup completed successfully!
 echo ========================================
@@ -229,3 +238,4 @@ echo - Sealed Secrets Controller
 echo.
 echo Verify all services: kubectl get pods --all-namespaces
 echo ArgoCD UI: kubectl get svc -n argocd
+REM argoCD 비밀번호 조회: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d 

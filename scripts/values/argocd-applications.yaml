@@ -71,7 +71,7 @@ spec:
     namespace: service-platform
     server: https://kubernetes.default.svc
   source:
-    path: argocd/service-platform
+    path: argocd/platform
     repoURL: https://github.com/CLD3rd-Team4/Infra
     targetRevision: dev
   project: default
