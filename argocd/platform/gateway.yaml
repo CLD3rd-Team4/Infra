@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
       - name: spring-gateway-container
-        image: example/spring-gateway:95e42ba
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-gateway::95e42ba
         ports:
         - protocol: TCP
           containerPort: 8080
