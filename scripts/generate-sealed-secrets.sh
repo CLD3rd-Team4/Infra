@@ -8,6 +8,8 @@ echo "========================================"
 NAMESPACE="service-platform"
 CONTROLLER_NAMESPACE="kube-system"
 REGION="ap-northeast-2"
+CLUSTER_NAME="mapzip-dev-eks"
+AWS_PROFILE="lt4"
 
 # SSM Parameter Store paths
 GITHUB_USERNAME_PARAM="/mapzip/config-server/github-username"
@@ -18,6 +20,33 @@ ENCRYPT_KEY_PARAM="/mapzip/config-server/encrypt-key"
 OUTPUT_FILE="../argocd/platform/sealed-secrets.yaml"
 
 echo "Checking prerequisites..."
+
+# AWS Configuration
+AWS_PROFILE="lt4"
+REGION="ap-northeast-2"
+CLUSTER_NAME="mapzip-dev-eks"
+
+# Setup AWS Profile and kubeconfig
+echo "🔧 Setting up AWS connection..."
+export AWS_PROFILE="$AWS_PROFILE"
+
+echo "Updating kubeconfig..."
+aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
+
+# Verify AWS account
+CURRENT_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text 2>/dev/null)
+EXPECTED_ACCOUNT="061039804626"
+
+if [ "$CURRENT_ACCOUNT" != "$EXPECTED_ACCOUNT" ]; then
+    echo "❌ AWS account verification failed!"
+    echo "   Current: $CURRENT_ACCOUNT"
+    echo "   Expected: $EXPECTED_ACCOUNT (mapzip team account)"
+    echo "   Please check AWS profile: $AWS_PROFILE"
+    exit 1
+fi
+
+echo "✅ AWS team account verified: $CURRENT_ACCOUNT"
+echo "✅ Kubeconfig updated for cluster: $CLUSTER_NAME"
 
 # Check if kubectl is available
 if ! command -v kubectl &> /dev/null; then
