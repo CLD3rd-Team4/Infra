@@ -279,14 +279,6 @@ module "client_vpn" {
     }
   ]
   
-  # 라우팅 규칙
-  # routes = [
-  #   {
-  #     destination_cidr_block = module.vpc.vpc_cidr_block
-  #     target_vpc_subnet_id   = module.private_subnets.subnet_ids[0]
-  #     description            = "Route to VPC"
-  #   }
-  # ]
   
   # 보안 그룹 규칙
   security_group_ingress_rules = [
