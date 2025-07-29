@@ -93,7 +93,7 @@ module "aurora_dbs" {
   common_tags   = local.common_tags
 
   # --- 서비스별 클러스터 생성 ---
-  aurora_service_names = ["recommend", "schedule"]
+    aurora_service_names = ["recommend", "schedule", "oauth"]
 
   # --- 네트워크 변수 전달 (network 모듈 출력값 사용) ---
   vpc_id             = module.vpc.vpc_id
