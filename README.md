@@ -1,6 +1,5 @@
   인프라 주요 변경 이력 (ElastiCache, DynamoDB, MSK 중심)
 
-  최근 인프라에 ElastiCache, DynamoDB, MSK 모듈이 추가되었습니다. 이 문서는 해당 변경 사항에 대한 상세 설명과 팀원들이 유의해야 할 점을 정리합니다.
 
   ---
 
