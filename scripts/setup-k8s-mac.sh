@@ -99,6 +99,9 @@ helm upgrade --install external-dns external-dns/external-dns \
   --set env[0].value=$REGION \
   --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::$AWS_ID:role/mapzip-dev-external-dns-irsa-role \
   --set args[0]="--annotation-filter=external-dns.alpha.kubernetes.io/hostname" \
+  --set args[1]="--policy=sync" \
+  --set managedRecordTypes[0]=A \
+  --set managedRecordTypes[1]=TXT \
   --set domainFilters[0]=$SERVICE_DOMAIN \
   --version 1.18.0 \
   --wait
@@ -172,6 +175,13 @@ helm upgrade --install istio-ingressgateway istio/gateway \
   --version 1.26.2 \
   --wait
 
+echo "Installing Istio East West Gateway..."
+helm install istio-eastwestgateway istio/gateway \
+  -n istio-system \
+  --set name=istio-eastwestgateway \
+  --set networkGateway=network1 \
+  --version 1.26.2
+
 echo "Installing Prometheus..."
 helm upgrade --install prometheus prometheus-community/prometheus \
   --namespace monitoring \
@@ -181,26 +191,38 @@ helm upgrade --install prometheus prometheus-community/prometheus \
   --set server.service.annotations."external-dns\.alpha\.kubernetes\.io/hostname"=prometheus.$SERVICE_DOMAIN \
   --set server.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-scheme"=internal \
   --set server.persistentVolume.storageClass=gp2 \
-  --set alertmanager.persistentVolume.storageClass=gp2 \
+  --set alertmanager.persistence.storageClass=gp2 \
+  --set alertmanager.persistence.enabled=true \
   --values ./values/prometheus-values.yaml \
   --version 27.28.1 \
   --wait
+
+echo "Creating ALB Ingress to Istio Ingress Gateway..."
+kubectl apply -f values/alb-ingress-to-istio-ingress.yaml
 
 echo "Creating Istio Telemetry configuration..."
 kubectl apply -f values/istio-telemetry.yaml
 
 echo "Creating Cross Network Gateway..."
-kubectl apply -f values/cross-network-gateway.yaml
+kubectl apply -n istio-system -f values/multicluster-eastwest-gateway.yaml
 
 echo "Creating ArgoCD Applications..."
 kubectl apply -f values/argocd-applications.yaml
 
 
-echo Installing Sealed Secrets Controller...
+echo "Installing Sealed Secrets Controller..."
 helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --namespace kube-system --version 2.15.4 --wait
 
-echo Waiting for Sealed Secrets Controller to be ready...
+echo "Waiting for Sealed Secrets Controller to be ready..."
 kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-controller -n kube-system
+
+echo "Note: Config Server Secrets are now managed by ArgoCD via SealedSecrets"
+echo "To generate SealedSecret values, use generate-sealed-secrets.sh on macOS/Linux"
+
+echo "Creating Grafana configuration..."
+
+# Grafana 빠른설치에서 서비스- 로드밸런서, external-dns 설정 / 프로메테우스 데이터소스 주소 수정
+kubectl apply -f values/grafana.yaml
 
 
 
@@ -222,3 +244,4 @@ echo "- Sealed Secrets Controller"
 echo ""
 echo "Verify all services: kubectl get pods --all-namespaces"
 echo "ArgoCD UI: kubectl get svc -n argocd"
+# argoCD 비밀번호 조회: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
