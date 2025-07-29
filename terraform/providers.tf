@@ -5,6 +5,11 @@ terraform {
       version = "~> 6.4.0"
     }
 
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6.0"
+    }
+
     postgresql = {
       source  = "cyrilgdn/postgresql"
       version = "1.22.0"
@@ -20,4 +25,3 @@ provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
 }
-

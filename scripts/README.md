@@ -10,11 +10,26 @@ cd scripts
 setup-k8s-windows.bat
 ```
 
+### Windows (Config Server Secrets와 함께)
+```cmd
+cd scripts
+set GIT_USERNAME=your-username
+set GIT_TOKEN=your-token
+setup-k8s-windows.bat
+```
+
 ### macOS/Linux
 ```bash
 cd scripts
 chmod +x setup-k8s-mac.sh
 ./setup-k8s-mac.sh
+```
+
+### macOS/Linux (Config Server Secrets와 함께)
+```bash
+cd scripts
+chmod +x setup-k8s-mac.sh
+GIT_USERNAME=your-username GIT_TOKEN=your-token ./setup-k8s-mac.sh
 ```
 
 ## 설치되는 컴포넌트
@@ -31,6 +46,7 @@ chmod +x setup-k8s-mac.sh
    - Istio Ingress Gateway
    - Jaeger (분산 추적)
 8. **Prometheus** - 모니터링 및 메트릭 수집
+9. **Sealed Secrets Controller** - Secret 암호화 관리
 
 ## 네임스페이스
 
@@ -43,6 +59,37 @@ chmod +x setup-k8s-mac.sh
 - `service-recommend` (Istio injection 활성화)
 - `service-schedule` (Istio injection 활성화)
 - `service-platform` (Istio injection 활성화)
+
+## Config Server Secrets
+
+Config Server가 사용하는 암호화된 Secret들은 **ArgoCD가 SealedSecret으로 관리**합니다.
+
+### SealedSecret 값 생성
+
+**macOS/Linux:**
+```bash
+cd scripts
+chmod +x generate-sealed-secrets.sh
+GIT_USERNAME=your-github-username GIT_TOKEN=your-github-token ./generate-sealed-secrets.sh
+```
+
+**Windows:**
+Windows에서는 macOS/Linux 환경에서 값을 생성하거나, WSL을 사용하세요.
+
+### 설정 방법
+
+1. **SealedSecret 값 생성**: 위 스크립트 실행
+2. **파일 수정**: `argocd/sealed-secrets.yaml`에서 REPLACE_WITH_* 부분을 생성된 값으로 교체
+3. **커밋 & 푸시**: Git에 커밋하고 푸시
+4. **자동 배포**: ArgoCD가 자동으로 SealedSecret을 배포
+
+### 관리되는 Secret들:
+- `config-server-encrypt-secret`: Config Server 암호화 키 (자동 생성)
+- `config-server-git-secret`: GitHub 인증 정보 (환경변수에서)
+
+### 파일 위치:
+- **SealedSecret 정의**: `argocd/sealed-secrets.yaml`
+- **Config Server 배포**: `argocd/platform/config.yaml`
 
 ## 설정 변수
 
@@ -73,6 +120,7 @@ chmod +x setup-k8s-mac.sh
    - kubectl
    - helm
    - aws cli (인증 설정 완료)
+   - kubeseal (Config Server Secrets 생성 시)
 
 2. EKS 클러스터가 이미 생성되어 있어야 합니다.
 
@@ -80,3 +128,5 @@ chmod +x setup-k8s-mac.sh
    - AWS Load Balancer Controller 역할
    - External DNS 역할
    - Cluster Autoscaler 역할
+
+4. Config Server Secrets 생성 시 GitHub Personal Access Token이 필요합니다.
