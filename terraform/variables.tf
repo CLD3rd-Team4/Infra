@@ -121,29 +121,3 @@ variable "ami_id" {
   description = "AMI ID for EKS worker nodes"
   type        = string
 }
-
-# Config Server 관련 변수들
-variable "config_server_github_username" {
-  description = "GitHub username for Config Server repository access"
-  type        = string
-  sensitive   = true
-}
-
-variable "config_server_github_token" {
-  description = "GitHub Personal Access Token for Config Server repository access"
-  type        = string
-  sensitive   = true
-}
-
-variable "enable_config_server_encrypt_key" {
-  description = "Enable Config Server encrypt key management (set to false if not needed)"
-  type        = bool
-  default     = true
-}
-
-variable "config_server_encrypt_key" {
-  description = "Config Server encryption key (leave empty to auto-generate)"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
