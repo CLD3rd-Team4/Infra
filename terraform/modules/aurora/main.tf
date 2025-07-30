@@ -69,6 +69,7 @@ resource "aws_rds_cluster" "this" {
   cluster_identifier      = "${var.common_prefix}${each.key}-db"
   engine                  = "aurora-postgresql"
   engine_mode             = "provisioned"
+  database_name           = "${each.key}_db"
   master_username         = var.db_master_username
   master_password         = var.db_master_password
   port                    = 5432
@@ -80,7 +81,7 @@ resource "aws_rds_cluster" "this" {
   # --- 운영 및 관리 ---
   availability_zones      = var.availability_zones
   skip_final_snapshot     = true
-  deletion_protection     = true
+    deletion_protection     = true
 
   # --- 태그 ---
   tags = merge(

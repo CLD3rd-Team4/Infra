@@ -80,10 +80,14 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: spring-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
       containers:
       - name: spring-gateway-container
-        image: example/spring-gateway:95e42ba
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-gateway:b932c1f
         ports:
         - protocol: TCP
           containerPort: 8080
