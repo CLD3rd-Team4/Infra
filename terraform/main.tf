@@ -248,6 +248,7 @@ module "eks" {
   public_access_cidrs = ["0.0.0.0/0"]
   ami_id              = var.ami_id
   eks_key_pair        = var.eks_key_pair
+  aws_region          = var.aws_region
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
 }
