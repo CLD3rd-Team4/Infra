@@ -110,6 +110,7 @@ kubectl create secret generic config-server-git-secret \
     --from-literal=token="$GITHUB_TOKEN" \
     --dry-run=client -o yaml | \
 kubeseal \
+    --controller-name sealed-secrets \
     --controller-namespace $CONTROLLER_NAMESPACE \
     --scope namespace-wide \
     --format yaml > "$GIT_SECRET_TEMP"
@@ -128,6 +129,7 @@ if [ -n "$ENCRYPT_KEY" ]; then
         --from-literal=encrypt-key="$ENCRYPT_KEY" \
         --dry-run=client -o yaml | \
     kubeseal \
+        --controller-name sealed-secrets \
         --controller-namespace $CONTROLLER_NAMESPACE \
         --scope namespace-wide \
         --format yaml > "$ENCRYPT_SECRET_TEMP"
