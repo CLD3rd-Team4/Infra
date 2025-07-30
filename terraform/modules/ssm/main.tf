@@ -4,6 +4,7 @@ resource "aws_ssm_parameter" "github_username" {
   description = "GitHub username for config server"
   type        = "String"
   value       = var.git_username
+  overwrite   = true
 
   tags = var.common_tags
 }
@@ -14,6 +15,7 @@ resource "aws_ssm_parameter" "github_token" {
   description = "GitHub personal access token for config server"
   type        = "SecureString"
   value       = var.git_token
+  overwrite   = true
 
   tags = var.common_tags
 }
@@ -26,6 +28,7 @@ resource "aws_ssm_parameter" "encrypt_key" {
   description = "Encryption key for config server"
   type        = "SecureString"
   value       = var.encrypt_key
+  overwrite   = true
 
   tags = var.common_tags
 }
