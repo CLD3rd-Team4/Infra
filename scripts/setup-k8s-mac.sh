@@ -220,10 +220,15 @@ echo "Note: Config Server Secrets are now managed by ArgoCD via SealedSecrets"
 echo "To generate SealedSecret values, use generate-sealed-secrets.sh on macOS/Linux"
 
 echo "Creating Grafana configuration..."
-
 # Grafana 빠른설치에서 서비스- 로드밸런서, external-dns 설정 / 프로메테우스 데이터소스 주소 수정
 kubectl apply -f values/grafana.yaml
 
+echo "Creating Fluent Bit configuration..."
+helm upgrade --install fluent-bit fluent/fluent-bit \
+  --namespace monitoring \
+  --create-namespace \
+  --kube-context cluster1 \
+  --set-file config.outputs=values/fluentbit-output.conf
 
 
 echo "========================================"

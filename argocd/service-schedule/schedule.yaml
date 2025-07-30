@@ -64,7 +64,6 @@ metadata:
   labels:
     app.kubernetes.io/name: schedule
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: schedule
@@ -108,12 +107,12 @@ spec:
           successThreshold: 1
 
 
-      - name: istio-proxy
-        volumeMounts:
-          - name: proto-descriptors
-            mountPath: /etc/envoy/protos
-            readOnly: true
-      volumes:
-        - name: proto-descriptors
-          configMap:
-            name: schedule-pb
+      # - name: istio-proxy
+      #   volumeMounts:
+      #     - name: proto-descriptors
+      #       mountPath: /etc/envoy/protos
+      #       readOnly: true
+      # volumes:
+      #   - name: proto-descriptors
+      #     configMap:
+      #       name: schedule-pb

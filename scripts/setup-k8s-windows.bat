@@ -48,6 +48,7 @@ helm repo add autoscaler https://kubernetes.github.io/autoscaler
 helm repo add istio https://istio-release.storage.googleapis.com/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+helm repo add fluent https://fluent.github.io/helm-charts
 helm repo update
 
 echo Creating namespaces...
@@ -225,6 +226,13 @@ echo Creating Grafana configuration...
 
 REM Grafana 빠른설치에서 서비스- 로드밸런서, external-dns 설정 / 프로메테우스 데이터소스 주소 수정
 kubectl apply -f values/grafana.yaml
+
+echo Creating Fluent Bit configuration...
+helm upgrade --install fluent-bit fluent/fluent-bit ^
+  --namespace monitoring ^
+  --create-namespace ^
+  --kube-context cluster1 ^
+  --set-file config.outputs=values/fluentbit-output.conf
 
 echo ========================================
 echo Setup completed successfully!
