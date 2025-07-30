@@ -147,3 +147,91 @@ resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach" {
   role       = aws_iam_role.cluster_autoscaler_irsa.name
   policy_arn = aws_iam_policy.cluster-autoscaler.arn
 }
+
+# Review Service IRSA Role
+resource "aws_iam_role" "review_service_irsa" {
+  name               = "${var.common_prefix}review-service-role"
+  assume_role_policy = data.aws_iam_policy_document.review_service_assume_role.json
+  tags               = var.common_tags
+}
+
+data "aws_iam_policy_document" "review_service_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.this.arn]
+    }
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:service-review:review-service-account"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+# Review Service DynamoDB and S3 Access Policy
+resource "aws_iam_policy" "review_service_policy" {
+  name        = "${var.common_prefix}review-service-policy"
+  description = "IAM policy for Review service to access DynamoDB and S3"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}reviews",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}reviews/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:PutObjectAcl"
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.common_prefix}image/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.common_prefix}image"
+        ]
+      }
+    ]
+  })
+
+  tags = var.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "review_service_attach" {
+  role       = aws_iam_role.review_service_irsa.name
+  policy_arn = aws_iam_policy.review_service_policy.arn
+}
