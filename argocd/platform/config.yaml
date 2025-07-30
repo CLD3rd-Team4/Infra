@@ -59,7 +59,7 @@ spec:
     spec:
       containers:
       - name: spring-config-server-container
-        image: mapzip/config-server:latest
+        image: mapzip/config-server:b2664a0
         ports:
         - protocol: TCP
           containerPort: 8888
