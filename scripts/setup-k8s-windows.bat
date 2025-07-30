@@ -178,9 +178,12 @@ helm upgrade --install istio-ingressgateway istio/gateway ^
   --version 1.26.2 ^
   --wait
 
-echo Installing Istio Cross Network Gateway...
-helm upgrade --install istio-crossnetworkgateway istio/gateway ^
-  -n istio-system --create-namespace --version 1.26.2
+echo Installing Istio East West Gateway...
+helm install istio-eastwestgateway istio/gateway ^
+  -n istio-system ^
+  --set name=istio-eastwestgateway ^
+  --set networkGateway=network1 ^
+  --version 1.26.2
 
 echo Installing Prometheus...
 helm upgrade --install prometheus prometheus-community/prometheus ^
@@ -197,11 +200,14 @@ helm upgrade --install prometheus prometheus-community/prometheus ^
   --version 27.28.1 ^
   --wait
 
+echo Creating ALB Ingress to Istio Ingress Gateway...
+kubectl apply -f values/alb-ingress-to-istio-ingress.yaml
+
 echo Creating Istio Telemetry configuration...
 kubectl apply -f values/istio-telemetry.yaml
 
 echo Creating Cross Network Gateway...
-kubectl apply -f values/cross-network-gateway.yaml
+kubectl apply -n istio-system -f values/multicluster-eastwest-gateway.yaml
 
 echo Creating ArgoCD Applications...
 kubectl apply -f values/argocd-applications.yaml
