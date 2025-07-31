@@ -67,9 +67,9 @@ resource "aws_s3_bucket_website_configuration" "this" {
 }
 
 
-# S3 버킷 정책 (웹사이트용)
+# S3 버킷 정책
 resource "aws_s3_bucket_policy" "this" {
-  count = var.is_public && var.cloudfront_oai_arn != null ? 1 : 0
+  count = var.cloudfront_oai_arn != null ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   policy = jsonencode({
