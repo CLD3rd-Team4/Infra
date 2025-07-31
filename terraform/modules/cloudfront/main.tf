@@ -7,6 +7,7 @@ resource "aws_cloudfront_distribution" "this" {
       origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
     }
   }
+  aliases = var.aliases
 
   enabled             = true
   is_ipv6_enabled     = true

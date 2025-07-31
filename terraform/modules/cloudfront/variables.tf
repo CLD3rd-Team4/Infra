@@ -16,3 +16,8 @@ variable "common_tags" {
   type = map(string)
 }
 
+variable "aliases" {
+  description = "CloudFront 배포에 사용할 도메인 이름 목록"
+  type        = list(string)
+  default     = []
+}
