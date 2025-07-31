@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
       - name: spring-config-server-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-config:2d57b16
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-config:f8d1a75
         ports:
         - protocol: TCP
           containerPort: 8888
