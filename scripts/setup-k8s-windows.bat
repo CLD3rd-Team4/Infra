@@ -156,7 +156,7 @@ helm upgrade --install istio-base istio/base ^
   --wait
 
 echo Creating Jaeger deployment and services...
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.26/samples/addons/jaeger.yaml
+kubectl apply -f values/jaeger.yaml
 
 
 echo Installing Istiod...

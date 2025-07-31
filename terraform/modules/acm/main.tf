@@ -4,6 +4,10 @@ resource "aws_acm_certificate" "this" {
   tags = merge(var.common_tags, {
     Name = "${var.common_prefix}acm-${replace(var.domain_name, ".", "-")}"
   })
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_route53_record" "validation" {
@@ -20,18 +24,13 @@ resource "aws_route53_record" "validation" {
   type    = each.value.type
   records = [each.value.record]
   ttl     = 300
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_acm_certificate_validation" "this" {
   certificate_arn         = aws_acm_certificate.this.arn
   validation_record_fqdns = [for record in aws_route53_record.validation : record.fqdn]
-}
-
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
 }
