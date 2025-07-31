@@ -144,7 +144,8 @@ module "cloudfront" {
   acm_certificate_arn = module.acm_frontend.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
-  depends_on = [module.acm_frontend]
+  depends_on          = [module.acm_frontend]
+  aliases             = ["www.mapzip.shop"]
 }
 //cloudfront- a record
 module "a_record_frontend" {
@@ -164,7 +165,8 @@ module "cloudfront_image" {
   acm_certificate_arn = module.acm_image.certificate_arn
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
-  depends_on = [module.acm_image]
+  depends_on          = [module.acm_image]
+  aliases             = ["img.mapzip.shop"]
 }
 
 //cloudfront(이미지연결)-a record
