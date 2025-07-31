@@ -74,7 +74,7 @@ spec:
     spec:
       containers:
       - name: schedule-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:f8d1a75
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:146515b
         ports:
         - containerPort: 9090
           name: grpc
