@@ -1,11 +1,34 @@
+# Secret들은 Terraform에서 관리하므로 여기서 제외
+# 
+# terraform에서 생성할 Secret 구조:
+# 1. schedule-db-credentials:
+#    - db_master_username (DB정보)
+#    - db_master_password (DB정보)  
+#    - AURORA_CLUSTER_ENDPOINT (인프라 정보)
+#    - DB_NAME (환경별 설정: 기본 postgres)
+# 2. schedule-api-keys:
+#    - TMAP_API_KEY (API 키)
+#    - KAKAO_API_KEY (API 키)
+---
+# 3. 애플리케이션 설정을 위한 ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schedule-config
+data:
+  # DB 관련 설정들은 모두 Terraform에서 관리
+  # AURORA_CLUSTER_ENDPOINT, DB_NAME은 Secret으로 이동
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  GRPC_SERVER_PORT: "9090"
+---
+# 4. Schedule Service (ClusterIP - 내부 통신용)
 apiVersion: v1
 kind: Service
 metadata:
   name: schedule
-  namespace: service-platform
 spec:
   selector:
-    app.kubernetes.io/name: schedule
+    app.kubernetes.io/name: schedule  # gateway.yaml과 일관성 있게 변경
   type: ClusterIP
   ports:
     - name: grpc
@@ -13,11 +36,11 @@ spec:
       port: 9090
       targetPort: 9090
 ---
+# 5. HPA 추가 (gateway.yaml 패턴 참고)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: schedule-hpa
-  namespace: service-platform
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -33,13 +56,14 @@ spec:
           type: Utilization
           averageUtilization: 70
 ---
+# 6. 애플리케이션 배포를 위한 Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: schedule-deployment
-  namespace: service-platform
+  labels:
+    app.kubernetes.io/name: schedule
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: schedule
@@ -50,18 +74,13 @@ spec:
     spec:
       containers:
       - name: schedule-container
-        image: mapzip/schedule-service:latest
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:4eb115d
         ports:
-        - protocol: TCP
-          containerPort: 9090
-        
-        # Config Server 연동을 위한 환경변수
-        env:
-        - name: SPRING_CLOUD_CONFIG_URI
-          value: "http://config.service-platform.svc.cluster.local:8888"
-        - name: SPRING_APPLICATION_NAME
-          value: "schedule"
-        
+        - containerPort: 9090
+          name: grpc
+          protocol: TCP
+
+        # 리소스 제한
         resources:
           requests:
             cpu: "200m"
@@ -69,8 +88,8 @@ spec:
           limits:
             cpu: "500m"
             memory: "1Gi"
-        
-        # gRPC Health Check
+
+        # Health Check (gRPC 서비스에 맞게 조정)
         livenessProbe:
           grpc:
             port: 9090
@@ -78,7 +97,7 @@ spec:
           periodSeconds: 15
           timeoutSeconds: 5
           failureThreshold: 3
-        
+
         readinessProbe:
           grpc:
             port: 9090
@@ -86,27 +105,14 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 3
           successThreshold: 1
----
-# HTTP → gRPC 변환을 위한 VirtualService
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: schedule-vs
-  namespace: service-platform
-spec:
-  hosts:
-  - "api.mapzip.shop"
-  gateways:
-  - spring-gateway-gateway
-  http:
-  - match:
-    - uri:
-        prefix: "/v1/schedules"
-    route:
-    - destination:
-        host: schedule.service-platform.svc.cluster.local
-        port:
-          number: 9090
-    retries:
-      attempts: 3
-      perTryTimeout: 10s
+
+
+      # - name: istio-proxy
+      #   volumeMounts:
+      #     - name: proto-descriptors
+      #       mountPath: /etc/envoy/protos
+      #       readOnly: true
+      # volumes:
+      #   - name: proto-descriptors
+      #     configMap:
+      #       name: schedule-pb

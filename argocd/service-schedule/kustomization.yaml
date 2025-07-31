@@ -1,0 +1,8 @@
+resources:
+  - envoy-grfc-http.yaml
+  - schedule.yaml
+
+configMapGenerator:
+  - name: schedule-pb
+    files:
+      - schedule_service_descriptor.pb

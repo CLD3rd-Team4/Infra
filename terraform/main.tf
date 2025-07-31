@@ -248,6 +248,7 @@ module "eks" {
   public_access_cidrs = ["0.0.0.0/0"]
   ami_id              = var.ami_id
   eks_key_pair        = var.eks_key_pair
+  aws_region          = var.aws_region
   common_prefix       = local.common_prefix
   common_tags         = local.common_tags
 }
@@ -502,4 +503,14 @@ module "github_oidc_role" {
       })
     }
   ]
+}
+
+# Config Server용 SSM 파라미터 관리
+module "config_server_ssm" {
+  source = "./modules/ssm"
+
+  git_username = var.git_username
+  git_token    = var.git_token
+  encrypt_key  = var.config_server_encrypt_key
+  common_tags  = local.common_tags
 }

@@ -37,3 +37,9 @@ variable "ami_id" {
 variable "eks_key_pair" {
   type        = string
 }
+
+variable "aws_region" {
+  description = "AWS region for resources"
+  type        = string
+  default     = "ap-northeast-2"
+}

@@ -33,3 +33,8 @@ output "cluster_autoscaler_irsa_role_arn" {
 output "eks_cluster_security_group_id" {
   value       = aws_security_group.eks_cluster.id
 }
+
+output "review_service_role_arn" {
+  description = "ARN of the IAM role for Review service"
+  value       = aws_iam_role.review_service_irsa.arn
+}

@@ -121,3 +121,23 @@ variable "ami_id" {
   description = "AMI ID for EKS worker nodes"
   type        = string
 }
+
+# Config Server 관련 변수들
+variable "git_username" {
+  description = "GitHub username for config server"
+  type        = string
+  sensitive   = true
+}
+
+variable "git_token" {
+  description = "GitHub personal access token for config server"
+  type        = string
+  sensitive   = true
+}
+
+variable "config_server_encrypt_key" {
+  description = "Encryption key for config server"
+  type        = string
+  sensitive   = true
+  default     = ""
+}

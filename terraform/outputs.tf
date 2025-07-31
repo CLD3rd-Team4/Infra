@@ -148,3 +148,11 @@ output "elasticache_recommend_cluster_endpoint" {
   description = "The endpoint of the ElastiCache cluster for recommendation"
   value       = module.elasticache_recommend.elasticache_cluster_endpoint
 }
+
+# ------------------------------------------------------------------------------
+# EKS 관련 정보 출력
+# ------------------------------------------------------------------------------
+output "review_service_role_arn" {
+  description = "ARN of the IAM role for Review service IRSA"
+  value       = module.eks.review_service_role_arn
+}
