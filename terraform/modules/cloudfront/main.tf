@@ -50,11 +50,3 @@ resource "aws_cloudfront_distribution" "this" {
 resource "aws_cloudfront_origin_access_identity" "this" {
   comment = "Access Identity for CloudFront to S3"
 }
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}

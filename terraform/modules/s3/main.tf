@@ -69,16 +69,18 @@ resource "aws_s3_bucket_website_configuration" "this" {
 
 # S3 버킷 정책 (웹사이트용)
 resource "aws_s3_bucket_policy" "this" {
-  count = var.is_public ? 1 : 0
+  count = var.is_public && var.cloudfront_oai_arn != null ? 1 : 0
   bucket = aws_s3_bucket.this.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "PublicReadGetObject"
+        Sid       = "AllowCloudFrontAccess"
         Effect    = "Allow"
-        Principal = "*"
+        Principal = {
+          AWS = var.cloudfront_oai_arn
+        }
         Action    = "s3:GetObject"
         Resource  = "${aws_s3_bucket.this.arn}/*"
       }

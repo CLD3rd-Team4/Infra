@@ -12,3 +12,8 @@ output "distribution_arn" {
   description = "CloudFront 배포 ARN"
   value       = aws_cloudfront_distribution.this.arn
 }
+
+output "oai_iam_arn" {
+  description = "CloudFront Origin Access Identity IAM ARN"
+  value       = aws_cloudfront_origin_access_identity.this.iam_arn
+}
