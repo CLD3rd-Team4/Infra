@@ -176,8 +176,8 @@ module "a_record_image" {
   record_type   = "A"
   zone_id       = module.route53.zone_id
   name          = "img.mapzip.shop"
-  alias_name    = module.cloudfront.domain_name
-  alias_zone_id = module.cloudfront.zone_id
+  alias_name    = module.cloudfront_image.domain_name
+  alias_zone_id = module.cloudfront_image.zone_id
 }
 
 
