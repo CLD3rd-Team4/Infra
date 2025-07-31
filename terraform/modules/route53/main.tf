@@ -9,8 +9,5 @@ resource "aws_route53_zone" "this" {
     }
   )
 
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 

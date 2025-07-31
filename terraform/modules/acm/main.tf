@@ -5,9 +5,6 @@ resource "aws_acm_certificate" "this" {
     Name = "${var.common_prefix}acm-${replace(var.domain_name, ".", "-")}"
   })
 
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_route53_record" "validation" {
@@ -25,9 +22,6 @@ resource "aws_route53_record" "validation" {
   records = [each.value.record]
   ttl     = 300
 
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_acm_certificate_validation" "this" {
