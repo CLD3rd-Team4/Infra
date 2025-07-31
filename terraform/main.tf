@@ -498,6 +498,14 @@ module "github_oidc_role" {
               "ecr:UploadLayerPart"
             ]
             Resource = "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/*"
+          },
+          {
+            Effect = "Allow"
+            Action = [
+              "eks:DescribeCluster",
+              "eks:ListClusters"
+            ]
+            Resource = "*"
           }
         ]
       })
