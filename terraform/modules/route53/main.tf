@@ -8,13 +8,9 @@ resource "aws_route53_zone" "this" {
       Name = "${var.common_prefix}hosted-zone"
     }
   )
-}
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
+
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
