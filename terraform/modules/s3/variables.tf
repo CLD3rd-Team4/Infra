@@ -31,3 +31,9 @@ variable "versioning_enabled" {
   type        = bool
   default     = false # 기본적으로 비활성화
 }
+
+variable "cloudfront_oai_arn" {
+  description = "CloudFront Origin Access Identity IAM ARN"
+  type        = string
+  default     = null
+}
