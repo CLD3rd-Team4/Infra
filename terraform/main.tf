@@ -516,8 +516,9 @@ module "github_oidc_role" {
 module "config_server_ssm" {
   source = "./modules/ssm"
 
-  git_username = var.git_username
-  git_token    = var.git_token
-  encrypt_key  = var.config_server_encrypt_key
-  common_tags  = local.common_tags
+  git_username           = var.git_username
+  git_token              = var.git_token
+  encrypt_key            = var.config_server_encrypt_key
+  google_vision_api_key  = var.google_vision_api_key
+  common_tags            = local.common_tags
 }
