@@ -69,7 +69,7 @@ resource "aws_s3_bucket_website_configuration" "this" {
 
 # S3 버킷 정책
 resource "aws_s3_bucket_policy" "this" {
-  count = var.cloudfront_oai_arn != null ? 1 : 0
+  for_each = var.cloudfront_oai_arn != null ? { "enabled" = var.cloudfront_oai_arn } : {}
   bucket = aws_s3_bucket.this.id
 
   policy = jsonencode({
