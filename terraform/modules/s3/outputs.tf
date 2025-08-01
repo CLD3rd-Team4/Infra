@@ -18,3 +18,8 @@ output "bucket_domain_name" {
   description = "S3 버킷의 도메인 이름"
   value       = aws_s3_bucket.this.bucket_domain_name
 }
+
+output "bucket_id" {
+  description = "S3 버킷의 ID"
+  value       = aws_s3_bucket.this.id
+}

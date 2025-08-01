@@ -67,25 +67,3 @@ resource "aws_s3_bucket_website_configuration" "this" {
 }
 
 
-# S3 버킷 정책
-resource "aws_s3_bucket_policy" "this" {
-  count = var.cloudfront_oai_arn != null ? 1 : 0
-  bucket = aws_s3_bucket.this.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "AllowCloudFrontAccess"
-        Effect    = "Allow"
-        Principal = {
-          AWS = var.cloudfront_oai_arn
-        }
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.this.arn}/*"
-      }
-    ]
-  })
-
-  depends_on = [aws_s3_bucket_public_access_block.this]
-}

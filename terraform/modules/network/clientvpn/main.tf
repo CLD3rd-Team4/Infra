@@ -1,5 +1,6 @@
 # Client VPN Endpoint
 resource "aws_ec2_client_vpn_endpoint" "this" {
+  
   description            = var.description
   server_certificate_arn = var.server_certificate_arn
   client_cidr_block      = var.client_cidr_block

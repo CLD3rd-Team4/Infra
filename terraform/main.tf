@@ -130,6 +130,26 @@ module "s3_website_bucket" {
   cloudfront_oai_arn = module.cloudfront.oai_iam_arn
 }
 
+// 웹사이트 s3 버킷 정책
+module "s3_bucket_policy_website" {
+  source = "./modules/s3-bucket-policy"
+
+  cloudfront_oai_arn = module.cloudfront.oai_iam_arn
+  bucket_arn = module.s3_website_bucket.bucket_arn
+  bucket_id = module.s3_website_bucket.bucket_id
+  depends_on = [module.s3_website_bucket, module.cloudfront]
+}
+
+// 이미지 s3 버킷 정책
+module "s3_bucket_policy_image" {
+  source = "./modules/s3-bucket-policy"
+
+  cloudfront_oai_arn = module.cloudfront_image.oai_iam_arn
+  bucket_arn = module.s3_image_bucket.bucket_arn
+  bucket_id = module.s3_image_bucket.bucket_id
+  depends_on = [module.s3_image_bucket, module.cloudfront_image]
+}
+
 // route 53
 module "route53" {
   source        = "./modules/route53"
