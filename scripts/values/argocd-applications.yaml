@@ -81,3 +81,24 @@ spec:
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-demo
+  namespace: argocd
+spec:
+  destination:
+    namespace: demo
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/demo
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
