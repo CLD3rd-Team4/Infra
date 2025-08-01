@@ -15,6 +15,7 @@ AWS_PROFILE="lt4"
 GITHUB_USERNAME_PARAM="/mapzip/config-server/github-username"
 GITHUB_TOKEN_PARAM="/mapzip/config-server/github-token"
 ENCRYPT_KEY_PARAM="/mapzip/config-server/encrypt-key"
+GOOGLE_VISION_API_KEY_PARAM="/mapzip/review/google-vision-api-key"
 
 # Output file
 OUTPUT_FILE="../argocd/platform/sealed-secrets.yaml"
@@ -94,6 +95,9 @@ fi
 # Get encrypt key from SSM (선택적)
 ENCRYPT_KEY=$(aws ssm get-parameter --region $REGION --name "$ENCRYPT_KEY_PARAM" --with-decryption --query 'Parameter.Value' --output text 2>/dev/null)
 
+# Get Google Vision API key from SSM
+GOOGLE_VISION_API_KEY=$(aws ssm get-parameter --region $REGION --name "$GOOGLE_VISION_API_KEY_PARAM" --with-decryption --query 'Parameter.Value' --output text 2>/dev/null)
+
 echo "Creating namespace if not exists..."
 kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
 
@@ -102,6 +106,7 @@ echo "Generating Sealed Secrets..."
 # Create temporary files
 GIT_SECRET_TEMP=$(mktemp)
 ENCRYPT_SECRET_TEMP=$(mktemp)
+GOOGLE_VISION_SECRET_TEMP=$(mktemp)
 
 # Generate Git Secret
 kubectl create secret generic config-server-git-secret \
@@ -143,6 +148,28 @@ else
     echo "⚠️  Encrypt key not found in SSM - skipping encrypt secret generation"
 fi
 
+# Generate Google Vision Secret (if API key exists)
+if [ -n "$GOOGLE_VISION_API_KEY" ]; then
+    echo "Generating Google Vision API secret..."
+    kubectl create secret generic google-cloud-vision-secret \
+        --namespace=service-review \
+        --from-literal=api-key="$GOOGLE_VISION_API_KEY" \
+        --dry-run=client -o yaml | \
+    kubeseal \
+        --controller-name sealed-secrets \
+        --controller-namespace $CONTROLLER_NAMESPACE \
+        --scope namespace-wide \
+        --format yaml > "$GOOGLE_VISION_SECRET_TEMP"
+
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to generate Google Vision secret"
+        rm -f "$GIT_SECRET_TEMP" "$ENCRYPT_SECRET_TEMP" "$GOOGLE_VISION_SECRET_TEMP"
+        exit 1
+    fi
+else
+    echo "⚠️  Google Vision API key not found in SSM - skipping Google Vision secret generation"
+fi
+
 # Combine secrets into one file
 cat > "$OUTPUT_FILE" << EOF
 # Config Server Sealed Secrets
@@ -164,20 +191,29 @@ if [ -n "$ENCRYPT_KEY" ]; then
     cat "$ENCRYPT_SECRET_TEMP" >> "$OUTPUT_FILE"
 fi
 
+# Add Google Vision Secret if it exists
+if [ -n "$GOOGLE_VISION_API_KEY" ]; then
+    echo "" >> "$OUTPUT_FILE"
+    echo "---" >> "$OUTPUT_FILE"
+    echo "" >> "$OUTPUT_FILE"
+    echo "# Google Cloud Vision API Secret (SealedSecret)" >> "$OUTPUT_FILE"
+    cat "$GOOGLE_VISION_SECRET_TEMP" >> "$OUTPUT_FILE"
+fi
+
 # Cleanup
-rm -f "$GIT_SECRET_TEMP" "$ENCRYPT_SECRET_TEMP"
+rm -f "$GIT_SECRET_TEMP" "$ENCRYPT_SECRET_TEMP" "$GOOGLE_VISION_SECRET_TEMP"
 
 echo "✅ Sealed secrets generated successfully!"
 echo ""
 echo "Generated file: $OUTPUT_FILE"
 echo ""
+echo "Generated secrets:"
+echo "  - config-server-git-secret (GitHub credentials)"
 if [ -n "$ENCRYPT_KEY" ]; then
-    echo "Generated secrets:"
-    echo "  - config-server-git-secret (GitHub credentials)"
     echo "  - config-server-encrypt-secret (Encryption key)"
-else
-    echo "Generated secrets:"
-    echo "  - config-server-git-secret (GitHub credentials)"
+fi
+if [ -n "$GOOGLE_VISION_API_KEY" ]; then
+    echo "  - google-cloud-vision-secret (Google Vision API key)"
 fi
 echo ""
 echo "Next steps:"
