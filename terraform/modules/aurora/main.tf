@@ -81,7 +81,7 @@ resource "aws_rds_cluster" "this" {
   # --- 운영 및 관리 ---
   availability_zones      = var.availability_zones
   skip_final_snapshot     = true
-    deletion_protection     = true
+    deletion_protection     = false
 
   # --- 태그 ---
   tags = merge(
