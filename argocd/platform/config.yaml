@@ -74,6 +74,11 @@ spec:
             secretKeyRef:
               name: config-server-git-secret
               key: token
+        - name: ENCRYPT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: config-server-encrypt-secret
+              key: encrypt-key
 
         resources:
           requests:
