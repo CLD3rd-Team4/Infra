@@ -140,6 +140,7 @@ module "s3_bucket_policy_website" {
   depends_on = [module.s3_website_bucket, module.cloudfront]
 }
 
+// 이미지 s3 버킷 정책
 module "s3_bucket_policy_image" {
   source = "./modules/s3-bucket-policy"
 
