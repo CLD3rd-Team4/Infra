@@ -67,7 +67,7 @@ spec:
               "emptyDir": {}
             }
           ]
-        sidecar.istio.io/userMount: |
+        sidecar.istio.io/userVolumeMount: |
           [
             {
               "name": "pb-volume",

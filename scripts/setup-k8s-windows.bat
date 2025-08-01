@@ -62,12 +62,15 @@ kubectl create namespace service-review --dry-run=client -o yaml | kubectl apply
 kubectl create namespace service-recommend --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace service-schedule --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace service-platform --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace demo --dry-run=client -o yaml | kubectl apply -f -
+
 
 kubectl label namespace service-review istio-injection=enabled --overwrite
 kubectl label namespace service-recommend istio-injection=enabled --overwrite
 kubectl label namespace service-schedule istio-injection=enabled --overwrite
 kubectl label namespace service-platform istio-injection=enabled --overwrite
 kubectl label namespace monitoring istio-injection=enabled --overwrite
+kubectl label namespace demo istio-injection=enabled --overwrite
 kubectl label namespace istio-system topology.istio.io/network=network1 --overwrite
 
 REM 서브넷 ID 조회
