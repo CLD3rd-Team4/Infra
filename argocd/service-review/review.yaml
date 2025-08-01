@@ -53,7 +53,6 @@ kind: Deployment
 metadata:
   name: review-deployment
 spec:
-  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: review
@@ -65,6 +64,21 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
+        sidecar.istio.io/userVolume: |
+          [
+            {
+              "name": "pb-volume",
+              "emptyDir": {}
+            }
+          ]
+        sidecar.istio.io/userVolumeMount: |
+          [
+            {
+              "name": "pb-volume",
+              "mountPath": "/etc/envoy/protos",
+              "readonly": true
+            }
+          ]
     spec:
       serviceAccountName: review-service-account
       containers:
@@ -127,10 +141,22 @@ spec:
         - name: logs-volume
           mountPath: /app/logs
 
+      initContainers:
+      - name: copy-pb
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
+        command: ["/bin/sh", "-c"]
+        args: ["cp /data/review_proto.pb /shared/"]
+        volumeMounts:
+          - name: pb-volume
+            mountPath: /shared
+
+
       volumes:
       - name: tmp-volume
         emptyDir: {}
       - name: logs-volume
+        emptyDir: {}
+      - name: pb-volume
         emptyDir: {}
 
       # Pod security context
