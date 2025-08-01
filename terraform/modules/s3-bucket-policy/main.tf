@@ -1,5 +1,5 @@
 # S3 버킷 정책
-resource "aws_s3_bucket_policy" "" {
+resource "aws_s3_bucket_policy" "this" {
   count = var.cloudfront_oai_arn != null ? 1 : 0
   bucket = var.bucket_id
 
