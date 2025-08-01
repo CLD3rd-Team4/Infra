@@ -1,10 +1,12 @@
+# S3 버킷 정책
+
 resource "aws_s3_bucket_policy" "this" {
   bucket = var.bucket_id
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = compact([
-      var.cloudfront_oai_arn != null && var.cloudfront_oai_arn != "" ? {
+    Statement = [
+      {
         Sid       = "AllowCloudFrontAccess"
         Effect    = "Allow"
         Principal = {
@@ -12,7 +14,8 @@ resource "aws_s3_bucket_policy" "this" {
         }
         Action    = "s3:GetObject"
         Resource  = "${var.bucket_arn}/*"
-      } : null
-    ])
+      }
+    ]
   })
+
 }
