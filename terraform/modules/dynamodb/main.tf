@@ -15,6 +15,19 @@ resource "aws_dynamodb_table" "this" {
     type = "S"
   }
 
+  # GSI를 위한 user_id 속성 추가
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
+
+  # 사용자별 리뷰 조회를 위한 UserIdIndex
+  global_secondary_index {
+    name     = "UserIdIndex"
+    hash_key = "user_id"
+    projection_type = "ALL"  # 모든 속성을 GSI에 포함
+  }
+
   # --- 태그 ---
   tags = merge(
     var.common_tags,
