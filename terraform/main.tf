@@ -232,7 +232,7 @@ module "acm_image" {
 
 module "ecr_repositories" {
   source           = "./modules/ecr"
-  repository_names = ["auth", "config", "review", "recommend", "schedule", "gateway"]
+  repository_names = ["auth", "config", "review", "recommend", "schedule", "gateway","pb"]
   common_prefix    = local.common_prefix
   common_tags      = local.common_tags
 }
@@ -543,6 +543,5 @@ module "config_server_ssm" {
   git_username           = var.git_username
   git_token              = var.git_token
   encrypt_key            = var.config_server_encrypt_key
-  google_vision_api_key  = var.google_vision_api_key
   common_tags            = local.common_tags
 }
