@@ -7,7 +7,7 @@ metadata:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/healthcheck-path: /healthz/ready
     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:061039804626:certificate/bcac93f1-0a29-4103-9cd8-351040501dee
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:061039804626:certificate/ec9eae87-d35b-49d3-9bea-a5fda4ce12e1
     alb.ingress.kubernetes.io/listen-ports: |
       [
         { "HTTP": 80 },
