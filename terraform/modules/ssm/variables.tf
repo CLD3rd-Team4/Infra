@@ -17,6 +17,13 @@ variable "encrypt_key" {
   default     = ""
 }
 
+variable "google_vision_api_key" {
+  description = "Google Cloud Vision API key for review service"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "common_tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)

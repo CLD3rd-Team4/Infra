@@ -32,3 +32,16 @@ resource "aws_ssm_parameter" "encrypt_key" {
 
   tags = var.common_tags
 }
+
+# Google Cloud Vision API 키 (Review 서비스용)
+resource "aws_ssm_parameter" "google_vision_api_key" {
+  count = var.google_vision_api_key != "" ? 1 : 0
+  
+  name        = "/mapzip/review/google-vision-api-key"
+  description = "Google Cloud Vision API key for review service"
+  type        = "SecureString"
+  value       = var.google_vision_api_key
+  overwrite   = true
+
+  tags = var.common_tags
+}

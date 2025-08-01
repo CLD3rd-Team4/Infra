@@ -141,3 +141,10 @@ variable "config_server_encrypt_key" {
   sensitive   = true
   default     = ""
 }
+
+variable "google_vision_api_key" {
+  description = "Google Cloud Vision API key for review service"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
