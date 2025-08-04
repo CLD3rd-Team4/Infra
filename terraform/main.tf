@@ -565,6 +565,6 @@ module "vpc_endpoints" {
       type                = "Gateway"
     }
   ]
-
+  common_prefix = local.common_prefix
   common_tags = local.common_tags
 }
