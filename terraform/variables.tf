@@ -5,7 +5,7 @@ locals {
     Project     = "mapzip"
     ManagedBy   = "Terraform"
   }
-
+  aurora_service_names = ["recommend", "schedule", "oauth"]
   private_subnet_config = [
     { name = "private-1", cidr_block = "10.0.14.0/24", availability_zone = "ap-northeast-2a" },
     { name = "private-2", cidr_block = "10.0.15.0/24", availability_zone = "ap-northeast-2b" },

@@ -20,3 +20,8 @@ output "db_usernames" {
   value       = { for k, v in aws_rds_cluster.this : k => v.master_username }
   sensitive   = true
 }
+
+output "aurora_service_names" {
+  description = "The names of the Aurora services"
+  value       = var.aurora_service_names
+}
