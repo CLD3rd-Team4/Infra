@@ -91,8 +91,6 @@ spec:
           value: "mapzip-dev-main-msk.c5.kafka.ap-northeast-2.amazonaws.com:9092"
         - name: ELASTICACHE_ENDPOINT
           value: "mapzip-dev-auth-cache.hwl2ad.cache.amazonaws.com"
-        - name: MSK_BOOTSTRAP_SERVERS
-          value: "mapzip-dev-main-msk.c5.kafka.ap-northeast-2.amazonaws.com:9092"
         - name: GOOGLE_CLOUD_VISION_API_KEY
           valueFrom:
             secretKeyRef:
