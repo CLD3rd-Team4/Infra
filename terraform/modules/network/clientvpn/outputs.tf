@@ -11,6 +11,7 @@ output "client_vpn_endpoint_arn" {
 output "client_vpn_endpoint_dns_name" {
   description = "DNS name of the Client VPN endpoint"
   value       = aws_ec2_client_vpn_endpoint.this.dns_name
+  sensitive   = true
 }
 
 output "security_group_id" {

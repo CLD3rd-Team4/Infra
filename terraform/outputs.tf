@@ -4,6 +4,7 @@
 output "aurora_cluster_endpoints" {
   description = "서비스별 Aurora DB 클러스터의 엔드포인트 주소 맵"
   value       = module.aurora_dbs.aurora_cluster_endpoints
+  sensitive   = true
 }
 
 output "aurora_cluster_ports" {
@@ -137,6 +138,7 @@ output "elasticache_auth_cluster_id" {
 output "elasticache_auth_cluster_endpoint" {
   description = "The endpoint of the ElastiCache cluster for authentication"
   value       = module.elasticache_auth.elasticache_cluster_endpoint
+  sensitive   = true
 }
 
 output "elasticache_recommend_cluster_id" {
@@ -147,6 +149,7 @@ output "elasticache_recommend_cluster_id" {
 output "elasticache_recommend_cluster_endpoint" {
   description = "The endpoint of the ElastiCache cluster for recommendation"
   value       = module.elasticache_recommend.elasticache_cluster_endpoint
+  sensitive   = true
 }
 
 # ------------------------------------------------------------------------------
