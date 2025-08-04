@@ -57,21 +57,21 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
-        sidecar.istio.io/userVolume: |
-          [
-            {
-              "name": "pb-volume",
-              "emptyDir": {}
-            }
-          ]
-        sidecar.istio.io/userVolumeMount: |
-          [
-            {
-              "name": "pb-volume",
-              "mountPath": "/etc/envoy/protos",
-              "readonly": true
-            }
-          ]
+        # sidecar.istio.io/userVolume: |
+        #   [
+        #     {
+        #       "name": "pb-volume",
+        #       "emptyDir": {}
+        #     }
+        #   ]
+        # sidecar.istio.io/userVolumeMount: |
+        #   [
+        #     {
+        #       "name": "pb-volume",
+        #       "mountPath": "/etc/envoy/protos",
+        #       "readonly": true
+        #     }
+        #   ]
     spec:
       serviceAccountName: recommend-service-account
       containers:
@@ -110,15 +110,15 @@ spec:
           successThreshold: 1
           failureThreshold: 3
 
-      initContainers:
-      - name: copy-pb
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
-        command: ["/bin/sh", "-c"]
-        args: ["cp /data/recommend_proto.pb /shared/"]
-        volumeMounts:
-          - name: pb-volume
-            mountPath: /shared
+      # initContainers:
+      # - name: copy-pb
+      #   image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
+      #   command: ["/bin/sh", "-c"]
+      #   args: ["cp /data/recommend_proto.pb /shared/"]
+      #   volumeMounts:
+      #     - name: pb-volume
+      #       mountPath: /shared
             
-      volumes:
-      - name: pb-volume
-        emptyDir: {}
+      # volumes:
+      # - name: pb-volume
+      #   emptyDir: {}
