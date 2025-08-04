@@ -92,7 +92,7 @@ if [ -z "$GITHUB_USERNAME" ] || [ -z "$GITHUB_TOKEN" ]; then
     exit 1
 fi
 
-# Get encrypt key from SSM (선택적)
+# Get encrypt key from SSM
 ENCRYPT_KEY=$(aws ssm get-parameter --region $REGION --name "$ENCRYPT_KEY_PARAM" --with-decryption --query 'Parameter.Value' --output text 2>/dev/null)
 
 # Get Google Vision API key from SSM
