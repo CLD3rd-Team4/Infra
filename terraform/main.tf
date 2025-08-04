@@ -168,6 +168,7 @@ module "cloudfront" {
   depends_on          = [module.acm_frontend]
   aliases             = ["www.mapzip.shop"]
 }
+
 //cloudfront- a record
 module "a_record_frontend" {
   source        = "./modules/record"
@@ -544,4 +545,26 @@ module "config_server_ssm" {
   git_token              = var.git_token
   encrypt_key            = var.config_server_encrypt_key
   common_tags            = local.common_tags
+}
+
+module "vpc_endpoints" {
+  source = "./modules/network/vpc-endpoints"
+
+  vpc_id             = module.vpc.vpc_id
+  region             = var.aws_region
+  route_table_ids    = [module.private_route_table.route_table_id]
+  subnet_ids         = module.private_subnets.subnet_ids 
+
+  services = [
+    {
+      name                = "dynamodb"
+      type                = "Gateway"
+    },
+    {
+      name                = "s3"
+      type                = "Gateway"
+    }
+  ]
+
+  common_tags = local.common_tags
 }
