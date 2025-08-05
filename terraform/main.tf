@@ -379,6 +379,18 @@ module "elasticache_recommend" {
   node_type                     = "cache.t3.medium" # 추천용은 중간 사양
 }
 
+# 리뷰 서버 전용 ElastiCache
+module "elasticache_review" {
+  source                        = "./modules/elasticache"
+  name_prefix                   = local.common_prefix
+  environment                   = terraform.workspace
+  cluster_name                  = "review-cache"
+  common_tags                   = local.common_tags
+  elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
+  security_group_ids            = [aws_security_group.elasticache_sg.id]
+  node_type                     = "cache.t3.small" # 리뷰용은 작은 사양
+}
+
 resource "aws_elasticache_subnet_group" "main" {
   name        = "${local.common_prefix}elasticache-subnet-group"
   subnet_ids  = module.private_subnets.subnet_ids
