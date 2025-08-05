@@ -27,12 +27,26 @@ resource "aws_dynamodb_table" "this" {
     type = "S"
   }
 
+  # 리뷰 상태 속성 (DRAFT, PUBLISHED, DELETED)
+  attribute {
+    name = "review_status"
+    type = "S"
+  }
+
   # 사용자별 리뷰 조회를 위한 UserIdIndex (시간순 정렬)
   global_secondary_index {
     name     = "UserIdIndex"
     hash_key = "user_id"
     range_key = "created_at"
     projection_type = "ALL"  
+  }
+
+  # 미작성 리뷰 조회를 위한 StatusIndex (상태별 조회)
+  global_secondary_index {
+    name     = "StatusIndex"
+    hash_key = "review_status"
+    range_key = "created_at"
+    projection_type = "ALL"
   }
 
   # --- 태그 ---
