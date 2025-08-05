@@ -141,3 +141,25 @@ variable "config_server_encrypt_key" {
   sensitive   = true
   default     = ""
 }
+
+# ==============================================================================
+# DB 알림 시스템 관련 변수들
+# ==============================================================================
+
+variable "oauth_webhook_url" {
+  description = "Slack webhook URL for oauth DB alerts"
+  type        = string
+  sensitive   = true
+}
+
+variable "recommend_webhook_url" {
+  description = "Slack webhook URL for recommend DB alerts"
+  type        = string
+  sensitive   = true
+}
+
+variable "schedule_webhook_url" {
+  description = "Slack webhook URL for schedule DB alerts"
+  type        = string
+  sensitive   = true
+}
