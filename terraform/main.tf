@@ -288,6 +288,7 @@ module "eks" {
   cluster_name        = "mapzip-${terraform.workspace}-eks"
   cluster_role_arn    = module.iam.eks_cluster_role_arn
   node_group_role_arn = module.iam.eks_node_group_role_arn
+  github_actions_role_arn = module.github_oidc_role.role_arn
   subnet_ids          = module.private_subnets.subnet_ids
   vpc_id              = module.vpc.vpc_id
   public_access_cidrs = ["0.0.0.0/0"]
