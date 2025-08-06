@@ -14,8 +14,7 @@ resource "aws_cloudfront_distribution" "this" {
   default_root_object = "index.html"
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    // allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3-${var.bucket_domain_name}"
 
@@ -35,6 +34,15 @@ resource "aws_cloudfront_distribution" "this" {
     //default_ttl            = 86400   # 1일 (GET 요청용)
     //max_ttl                = 31536000 # 1년
   }
+
+  # dynamic "custom_error_response" {
+  #   for_each = var.is_website ? [403, 404] : []
+  #   content {
+  #     error_code         = custom_error_response.value
+  #     response_code      = 200
+  #     response_page_path = "/index.html"
+  #   }
+  # }
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn

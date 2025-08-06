@@ -21,3 +21,10 @@ variable "aliases" {
   type        = list(string)
   default     = []
 }
+
+variable "is_website" {
+  description = "CloudFront 배포가 정적 웹사이트용인지 여부"
+  type        = bool
+  default     = false
+  
+}
