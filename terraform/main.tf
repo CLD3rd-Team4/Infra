@@ -188,6 +188,7 @@ module "cloudfront" {
   common_tags         = local.common_tags
   depends_on          = [module.acm_frontend]
   aliases             = ["www.mapzip.shop"]
+  is_website          = true
 }
 
 //cloudfront- a record
