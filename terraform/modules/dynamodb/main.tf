@@ -3,7 +3,7 @@ resource "aws_dynamodb_table" "this" {
   name           = "${var.name_prefix}${var.table_name}"
   billing_mode   = "PAY_PER_REQUEST"
   hash_key       = "restaurant_id"
-  range_key      = "review_id"
+  range_key      = "created_at_user_id"  
 
   attribute {
     name = "restaurant_id"
@@ -11,7 +11,7 @@ resource "aws_dynamodb_table" "this" {
   }
 
   attribute {
-    name = "review_id"
+    name = "created_at_user_id"
     type = "S"
   }
 
@@ -21,11 +21,32 @@ resource "aws_dynamodb_table" "this" {
     type = "S"
   }
 
-  # 사용자별 리뷰 조회를 위한 UserIdIndex
+  # GSI를 위한 created_at 속성 추가
+  attribute {
+    name = "created_at"
+    type = "S"
+  }
+
+  # 리뷰 상태 속성 (DRAFT, PUBLISHED, DELETED)
+  attribute {
+    name = "review_status"
+    type = "S"
+  }
+
+  # 사용자별 리뷰 조회를 위한 UserIdIndex (시간순 정렬)
   global_secondary_index {
     name     = "UserIdIndex"
     hash_key = "user_id"
-    projection_type = "ALL"  # 모든 속성을 GSI에 포함
+    range_key = "created_at"
+    projection_type = "ALL"  
+  }
+
+  # 미작성 리뷰 조회를 위한 StatusIndex (상태별 조회)
+  global_secondary_index {
+    name     = "StatusIndex"
+    hash_key = "review_status"
+    range_key = "created_at"
+    projection_type = "ALL"
   }
 
   # --- 태그 ---

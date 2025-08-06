@@ -55,10 +55,10 @@ module "natgw" {
 
 # ------------------------------------------------------------------------------
 # PostgreSQL 공급자 설정 (루트 모듈)
-# 여러 Aurora 클러스터 중 'recommend' DB에 연결하여 DB 및 역할 관리를 수행합니다.
+# - 각 Aurora 클러스터에 연결하기 위한 별도의 공급자를 정의합니다.
 # ------------------------------------------------------------------------------
 provider "postgresql" {
-  alias    = "aurora_root"
+  alias    = "recommend"
   host     = module.aurora_dbs.aurora_cluster_endpoints["recommend"]
   port     = 5432
   username = var.db_master_username
@@ -67,22 +67,43 @@ provider "postgresql" {
   connect_timeout = 10
 }
 
-# ------------------------------------------------------------------------------
-# 기능별 데이터베이스 및 역할 생성 (루트 모듈)
-# ------------------------------------------------------------------------------
-resource "postgresql_database" "dbs" {
-  provider = postgresql.aurora_root
-  for_each = var.enable_db_creation ? toset(keys(var.databases)) : []
-  name     = "mapzip_${each.key}"
-  owner    = postgresql_role.users[each.key].name
+provider "postgresql" {
+  alias    = "schedule"
+  host     = module.aurora_dbs.aurora_cluster_endpoints["schedule"]
+  port     = 5432
+  username = var.db_master_username
+  password = var.db_master_password
+  sslmode  = "require"
+  connect_timeout = 10
 }
 
-resource "postgresql_role" "users" {
-  provider = postgresql.aurora_root
-  for_each = var.enable_db_creation ? toset(keys(var.databases)) : []
-  name     = "mapzip-${each.key}-${terraform.workspace}"
-  login    = true
-  password = var.databases[each.key].password
+provider "postgresql" {
+  alias    = "oauth"
+  host     = module.aurora_dbs.aurora_cluster_endpoints["oauth"]
+  port     = 5432
+  username = var.db_master_username
+  password = var.db_master_password
+  sslmode  = "require"
+  connect_timeout = 10
+}
+
+# ------------------------------------------------------------------------------
+# 기능별 데이터베이스 및 역할 생성 (모듈 사용)
+# ------------------------------------------------------------------------------
+module "db_provisioner" {
+  source = "./modules/db_provisioner"
+  for_each = {
+    for k, v in var.databases : k => v
+    if var.enable_db_creation && contains(local.aurora_service_names, k)
+  }
+
+  providers = {
+    postgresql = postgresql
+  }
+
+  db_name     = "mapzip_${each.key}"
+  db_user     = "mapzip-${each.key}-${terraform.workspace}"
+  db_password = each.value.password
 }
 
 module "aurora_dbs" {
@@ -93,7 +114,7 @@ module "aurora_dbs" {
   common_tags   = local.common_tags
 
   # --- 서비스별 클러스터 생성 ---
-    aurora_service_names = ["recommend", "schedule", "oauth"]
+      aurora_service_names = local.aurora_service_names
 
   # --- 네트워크 변수 전달 (network 모듈 출력값 사용) ---
   vpc_id             = module.vpc.vpc_id
@@ -267,6 +288,7 @@ module "eks" {
   cluster_name        = "mapzip-${terraform.workspace}-eks"
   cluster_role_arn    = module.iam.eks_cluster_role_arn
   node_group_role_arn = module.iam.eks_node_group_role_arn
+  github_actions_role_arn = module.github_oidc_role.role_arn
   subnet_ids          = module.private_subnets.subnet_ids
   vpc_id              = module.vpc.vpc_id
   public_access_cidrs = ["0.0.0.0/0"]
@@ -356,6 +378,18 @@ module "elasticache_recommend" {
   elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
   security_group_ids            = [aws_security_group.elasticache_sg.id]
   node_type                     = "cache.t3.medium" # 추천용은 중간 사양
+}
+
+# 리뷰 서버 전용 ElastiCache
+module "elasticache_review" {
+  source                        = "./modules/elasticache"
+  name_prefix                   = local.common_prefix
+  environment                   = terraform.workspace
+  cluster_name                  = "review-cache"
+  common_tags                   = local.common_tags
+  elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
+  security_group_ids            = [aws_security_group.elasticache_sg.id]
+  node_type                     = "cache.t3.small" # 리뷰용은 작은 사양
 }
 
 resource "aws_elasticache_subnet_group" "main" {

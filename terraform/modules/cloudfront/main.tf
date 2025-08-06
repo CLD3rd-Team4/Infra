@@ -14,18 +14,24 @@ resource "aws_cloudfront_distribution" "this" {
   default_root_object = "index.html"
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3-${var.bucket_domain_name}"
 
     viewer_protocol_policy = "redirect-to-https"
 
     forwarded_values {
-      query_string = false
+      query_string = true  # S3 업로드 시 query string 필요
+      headers      = ["Authorization", "Content-Type", "Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]  # CloudFront 허용 헤더만
       cookies {
         forward = "none"
       }
     }
+
+    # 업로드 요청은 캐싱하지 않음
+    min_ttl                = 0
+    default_ttl            = 86400   # 1일 (GET 요청용)
+    max_ttl                = 31536000 # 1년
   }
 
   viewer_certificate {
