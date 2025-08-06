@@ -602,3 +602,90 @@ module "vpc_endpoints" {
 
   common_tags = local.common_tags
 }
+
+# ==============================================================================
+# DB 모니터링 및 알림 시스템
+# ==============================================================================
+
+# SNS 토픽 생성
+module "db_alert_sns" {
+  source = "./modules/sns"
+
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+  db_services = {
+    oauth = {
+      cluster_identifier = "mapzip-dev-oauth-db"
+      slack_channel      = "#1-platform"
+      webhook_url        = var.oauth_webhook_url
+    }
+    recommend = {
+      cluster_identifier = "mapzip-dev-recommend-db"
+      slack_channel      = "#1-recommend"
+      webhook_url        = var.recommend_webhook_url
+    }
+    schedule = {
+      cluster_identifier = "mapzip-dev-schedule-db"
+      slack_channel      = "#1-schedule"
+      webhook_url        = var.schedule_webhook_url
+    }
+  }
+}
+
+# Lambda 함수 생성
+module "db_alert_lambda" {
+  source = "./modules/lambda"
+
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+  db_services = {
+    oauth = {
+      cluster_identifier = "mapzip-dev-oauth-db"
+      slack_channel      = "#1-platform"
+      webhook_url        = var.oauth_webhook_url
+    }
+    recommend = {
+      cluster_identifier = "mapzip-dev-recommend-db"
+      slack_channel      = "#1-recommend"
+      webhook_url        = var.recommend_webhook_url
+    }
+    schedule = {
+      cluster_identifier = "mapzip-dev-schedule-db"
+      slack_channel      = "#1-schedule"
+      webhook_url        = var.schedule_webhook_url
+    }
+  }
+  sns_topic_arns = module.db_alert_sns.sns_topic_arns
+}
+
+# CloudWatch 알람 생성
+module "db_alert_cloudwatch" {
+  source = "./modules/cloudwatch"
+
+  common_prefix = local.common_prefix
+  common_tags   = local.common_tags
+  db_services = {
+    oauth = {
+      cluster_identifier = "mapzip-dev-oauth-db"
+      slack_channel      = "#1-platform"
+      webhook_url        = var.oauth_webhook_url
+    }
+    recommend = {
+      cluster_identifier = "mapzip-dev-recommend-db"
+      slack_channel      = "#1-recommend"
+      webhook_url        = var.recommend_webhook_url
+    }
+    schedule = {
+      cluster_identifier = "mapzip-dev-schedule-db"
+      slack_channel      = "#1-schedule"
+      webhook_url        = var.schedule_webhook_url
+    }
+  }
+  sns_topic_arns = module.db_alert_sns.sns_topic_arns
+
+  # 임계값 설정
+  cpu_threshold           = 80          # 80%
+  memory_threshold        = 1073741824  # 1GB
+  read_latency_threshold  = 0.1         # 100ms
+  write_latency_threshold = 0.1         # 100ms
+}
