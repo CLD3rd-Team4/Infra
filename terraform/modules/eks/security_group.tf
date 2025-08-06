@@ -108,5 +108,11 @@ resource "aws_security_group" "aws_eks_node_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  lifecycle {
+    ignore_changes = [
+      ingress  # 인바운드 규칙 변경 감시 무시
+    ]
+  }
+
   tags = var.common_tags
 }
