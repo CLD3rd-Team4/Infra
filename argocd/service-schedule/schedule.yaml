@@ -122,15 +122,15 @@ spec:
           timeoutSeconds: 3
           successThreshold: 1
 
-      # initContainers:
-      # - name: copy-pb
-      #   image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
-      #   command: ["/bin/sh", "-c"]
-      #   args: ["cp /data/schedule_proto.pb /shared/"]
-      #   volumeMounts:
-      #     - name: pb-volume
-      #       mountPath: /shared
+      initContainers:
+      - name: copy-pb
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:59cfbed
+        command: ["/bin/sh", "-c"]
+        args: ["cp /data/schedule_proto.pb /shared/"]
+        volumeMounts:
+          - name: pb-volume
+            mountPath: /shared
 
-      # volumes:
-      #   - name: pb-volume
-      #     emptyDir: {}
+      volumes:
+        - name: pb-volume
+          emptyDir: {}
