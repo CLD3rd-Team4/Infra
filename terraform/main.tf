@@ -188,6 +188,7 @@ module "cloudfront" {
   common_tags         = local.common_tags
   depends_on          = [module.acm_frontend]
   aliases             = ["www.mapzip.shop"]
+  is_website          = true
 }
 
 //cloudfront- a record
@@ -599,7 +600,7 @@ module "vpc_endpoints" {
       type                = "Gateway"
     }
   ]
-
+  common_prefix = local.common_prefix
   common_tags = local.common_tags
 }
 
