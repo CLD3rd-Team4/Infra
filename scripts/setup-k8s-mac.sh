@@ -44,7 +44,7 @@ helm repo add geek-cookbook https://geek-cookbook.github.io/charts/
 helm repo add autoscaler https://kubernetes.github.io/autoscaler
 helm repo add istio https://istio-release.storage.googleapis.com/charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+
 helm repo update
 
 echo "Creating namespaces..."
@@ -210,13 +210,6 @@ echo "Creating ArgoCD Applications..."
 kubectl apply -f values/argocd-applications.yaml
 
 
-echo "Installing Sealed Secrets Controller..."
-helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets --namespace kube-system --version 2.15.4 --wait
-
-echo "Waiting for Sealed Secrets Controller to be ready..."
-kubectl wait --for=condition=available --timeout=300s deployment/sealed-secrets-controller -n kube-system
-
-echo "Note: Config Server Secrets are now managed by ArgoCD via SealedSecrets"
 echo "To generate SealedSecret values, use generate-sealed-secrets.sh on macOS/Linux"
 
 echo "Creating Grafana configuration..."
@@ -245,7 +238,6 @@ echo "- Cluster Autoscaler"
 echo "- Istio (Base, Istiod, Ingress Gateway)"
 echo "- Jaeger (Distributed Tracing)"
 echo "- Prometheus"
-echo "- Sealed Secrets Controller"
 echo ""
 echo "Verify all services: kubectl get pods --all-namespaces"
 echo "ArgoCD UI: kubectl get svc -n argocd"

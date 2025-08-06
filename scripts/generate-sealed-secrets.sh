@@ -68,17 +68,44 @@ if ! command -v aws &> /dev/null; then
     exit 1
 fi
 
+# Check if helm is available
+if ! command -v helm &> /dev/null; then
+    echo "Error: helm is not installed or not in PATH"
+    echo "Install with: brew install helm"
+    exit 1
+fi
+
 # Check if sealed-secrets controller is running
 echo "Checking Sealed Secrets Controller..."
 if ! kubectl get deployment -n $CONTROLLER_NAMESPACE -l app.kubernetes.io/name=sealed-secrets &> /dev/null; then
-    echo "❌ Error: Sealed Secrets Controller is not installed"
-    echo "Please run step 4️⃣ from SEALED_SECRETS_SIMPLE.md first"
-    exit 1
+    echo "⚠️  Sealed Secrets Controller not found. Installing..."
+    
+    # Add Sealed Secrets Helm repository
+    echo "Adding Sealed Secrets Helm repository..."
+    helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+    helm repo update
+    
+    # Install Sealed Secrets Controller
+    echo "Installing Sealed Secrets Controller..."
+    helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets \
+        --namespace $CONTROLLER_NAMESPACE \
+        --version 2.15.4 \
+        --wait \
+        --timeout 300s
+    
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to install Sealed Secrets Controller"
+        exit 1
+    fi
+    
+    echo "✅ Sealed Secrets Controller installed successfully!"
+else
+    echo "✅ Sealed Secrets Controller already installed"
 fi
 
 # Wait for controller to be ready
 echo "Waiting for controller to be ready..."
-kubectl wait --for=condition=available --timeout=60s deployment -l app.kubernetes.io/name=sealed-secrets -n $CONTROLLER_NAMESPACE
+kubectl wait --for=condition=available --timeout=300s deployment -l app.kubernetes.io/name=sealed-secrets -n $CONTROLLER_NAMESPACE
 
 echo "Fetching secrets from AWS SSM Parameter Store..."
 
