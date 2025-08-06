@@ -22,7 +22,7 @@ resource "aws_cloudfront_distribution" "this" {
 
     forwarded_values {
       query_string = true  # S3 업로드 시 query string 필요
-      headers      = ["Authorization", "Content-Type", "Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]  # CloudFront 허용 헤더만
+      headers      = ["Authorization", "Content-Type", "Content-MD5", "x-amz-*"]  # S3 업로드 헤더 전달
       cookies {
         forward = "none"
       }
