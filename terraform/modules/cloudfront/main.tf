@@ -30,7 +30,7 @@ resource "aws_cloudfront_distribution" "this" {
       }
     }
 
-    # 업로드 요청은 캐싱하지 않음
+  
     //min_ttl                = 0
     //default_ttl            = 86400   # 1일 (GET 요청용)
     //max_ttl                = 31536000 # 1년
