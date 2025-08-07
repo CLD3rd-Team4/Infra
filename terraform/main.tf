@@ -355,7 +355,7 @@ module "dynamodb" {
   source       = "./modules/dynamodb"
   name_prefix  = local.common_prefix
   environment  = terraform.workspace
-  table_name   = "reviews"
+  table_name   = "review"
   common_tags  = local.common_tags
 }
 

@@ -103,8 +103,10 @@ spec:
           value: "mapzip-dev-image"
         - name: MSK_BOOTSTRAP_SERVERS
           value: "mapzip-dev-main-msk.c5.kafka.ap-northeast-2.amazonaws.com:9092"
-        - name: ELASTICACHE_ENDPOINT
-          value: "mapzip-dev-review-cache.xxxxx.cache.amazonaws.com"
+        - name: REDIS_HOST
+          value: "mapzip-dev-review-cache.cache.amazonaws.com"
+        - name: REDIS_PORT
+          value: "6379"
         - name: CLOUDFRONT_IMAGE_DOMAIN
           value: "https://img.mapzip.shop"
         - name: GOOGLE_CLOUD_VISION_API_KEY
