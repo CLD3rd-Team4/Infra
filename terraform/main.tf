@@ -708,13 +708,13 @@ module "db_alert_cloudwatch" {
   # ElastiCache 클러스터 모니터링
   elasticache_clusters = {
     oauth = {
-      cluster_id = "mapzip-dev-auth-cache"
+      cluster_id = "mapzip-dev-auth-cache-001"
     }
     recommend = {
-      cluster_id = "mapzip-dev-recommend-cache"
+      cluster_id = "mapzip-dev-recommend-cache-001"
     }
     review = {
-      cluster_id = "mapzip-dev-review-cache"
+      cluster_id = "mapzip-dev-review-cache-001"
     }
   }
 
