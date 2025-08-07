@@ -180,3 +180,8 @@ variable "snapshot_retention_limit" {
   type        = number
   default     = 1
 }
+variable "review_webhook_url" {
+  description = "Slack webhook URL for review service alerts"
+  type        = string
+  sensitive   = true
+}
