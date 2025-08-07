@@ -35,14 +35,14 @@ resource "aws_cloudfront_distribution" "this" {
     //max_ttl                = 31536000 # 1년
   }
 
-  # dynamic "custom_error_response" {
-  #   for_each = var.is_website ? [403, 404] : []
-  #   content {
-  #     error_code         = custom_error_response.value
-  #     response_code      = 200
-  #     response_page_path = "/index.html"
-  #   }
-  # }
+  dynamic "custom_error_response" {
+    for_each = var.is_website ? [403, 404] : []
+    content {
+      error_code         = custom_error_response.value
+      response_code      = 200
+      response_page_path = "/index.html"
+    }
+  }
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
