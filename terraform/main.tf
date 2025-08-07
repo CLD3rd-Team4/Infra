@@ -365,9 +365,11 @@ module "elasticache_auth" {
   environment                   = terraform.workspace
   cluster_name                  = "auth-cache"
   common_tags                   = local.common_tags
+  snapshot_retention_limit      = var.snapshot_retention_limit
   elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
   security_group_ids            = [aws_security_group.elasticache_sg.id]
   node_type                     = "cache.t3.small" # 인증용은 작은 사양
+  num_cache_nodes               = var.valkey_num_cache_nodes
 }
 
 module "elasticache_recommend" {
@@ -376,9 +378,11 @@ module "elasticache_recommend" {
   environment                   = terraform.workspace
   cluster_name                  = "recommend-cache"
   common_tags                   = local.common_tags
+  snapshot_retention_limit      = var.snapshot_retention_limit
   elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
   security_group_ids            = [aws_security_group.elasticache_sg.id]
   node_type                     = "cache.t3.medium" # 추천용은 중간 사양
+  num_cache_nodes               = var.valkey_num_cache_nodes
 }
 
 # 리뷰 서버 전용 ElastiCache
@@ -388,9 +392,24 @@ module "elasticache_review" {
   environment                   = terraform.workspace
   cluster_name                  = "review-cache"
   common_tags                   = local.common_tags
+  snapshot_retention_limit      = var.snapshot_retention_limit
   elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
   security_group_ids            = [aws_security_group.elasticache_sg.id]
   node_type                     = "cache.t3.small" # 리뷰용은 작은 사양
+  num_cache_nodes               = var.valkey_num_cache_nodes
+}
+
+module "elasticache_serverless_schedule" {
+  source                        = "./modules/elasticache"
+  use_serverless_cache          = true
+  name_prefix                   = local.common_prefix
+  environment                   = terraform.workspace
+  cluster_name                  = "schedule-cache"
+  common_tags                   = local.common_tags
+  snapshot_retention_limit      = var.snapshot_retention_limit
+  security_group_ids            = [aws_security_group.elasticache_sg.id]
+  subnet_ids                    = module.private_subnets.subnet_ids
+  serverless_cache_data_storage_maximum = var.serverless_cache_data_storage_maximum
 }
 
 resource "aws_elasticache_subnet_group" "main" {

@@ -56,4 +56,8 @@ resource "aws_dynamodb_table" "this" {
       Name = "${var.name_prefix}-${var.table_name}"
     }
   )
+
+  point_in_time_recovery {
+    enabled = terraform.workspace == "prod" ? true : false
+  }
 }
