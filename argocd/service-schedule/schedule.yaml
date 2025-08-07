@@ -61,9 +61,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: schedule-deployment
-  labels:
-    app.kubernetes.io/name: schedule
 spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: schedule
