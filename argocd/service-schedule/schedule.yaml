@@ -35,6 +35,10 @@ spec:
       protocol: TCP
       port: 9090
       targetPort: 9090
+    - name: http
+      protocol: TCP
+      port: 8084
+      targetPort: 8084
 ---
 # 5. HPA 추가 (gateway.yaml 패턴 참고)
 apiVersion: autoscaling/v2
@@ -98,6 +102,9 @@ spec:
         - containerPort: 9090
           name: grpc
           protocol: TCP
+        - containerPort: 8084
+          name: http
+          protocol: TCP
 
         # 리소스 제한
         resources:
@@ -108,18 +115,20 @@ spec:
             cpu: "500m"
             memory: "1Gi"
 
-        # Health Check (gRPC 서비스에 맞게 조정)
+        # Health Check (HTTP + Actuator로 변경)
         livenessProbe:
-          grpc:
-            port: 9090
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8084
           initialDelaySeconds: 60
           periodSeconds: 15
           timeoutSeconds: 5
           failureThreshold: 3
 
         readinessProbe:
-          grpc:
-            port: 9090
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8084
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 3
