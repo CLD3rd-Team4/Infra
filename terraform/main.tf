@@ -630,6 +630,11 @@ module "db_alert_sns" {
       slack_channel      = "#1-schedule"
       webhook_url        = var.schedule_webhook_url
     }
+    review = {
+      cluster_identifier = "mapzip-dev-reviews-table"
+      slack_channel      = "#1-review"
+      webhook_url        = var.review_webhook_url
+    }
   }
 }
 
@@ -654,6 +659,11 @@ module "db_alert_lambda" {
       cluster_identifier = "mapzip-dev-schedule-db"
       slack_channel      = "#1-schedule"
       webhook_url        = var.schedule_webhook_url
+    }
+    review = {
+      cluster_identifier = "mapzip-dev-reviews-table"
+      slack_channel      = "#1-review"
+      webhook_url        = var.review_webhook_url
     }
   }
   sns_topic_arns = module.db_alert_sns.sns_topic_arns
@@ -681,12 +691,48 @@ module "db_alert_cloudwatch" {
       slack_channel      = "#1-schedule"
       webhook_url        = var.schedule_webhook_url
     }
+    review = {
+      cluster_identifier = "mapzip-dev-reviews-table"
+      slack_channel      = "#1-review"
+      webhook_url        = var.review_webhook_url
+    }
   }
+  
+  # DynamoDB 테이블 모니터링
+  dynamodb_tables = {
+    review = {
+      table_name = "mapzip-dev-reviews"
+    }
+  }
+  
+  # ElastiCache 클러스터 모니터링
+  elasticache_clusters = {
+    auth = {
+      cluster_id = "mapzip-dev-auth-cache"
+    }
+    recommend = {
+      cluster_id = "mapzip-dev-recommend-cache"
+    }
+    review = {
+      cluster_id = "mapzip-dev-review-cache"
+    }
+  }
+
   sns_topic_arns = module.db_alert_sns.sns_topic_arns
 
-  # 임계값 설정
+  # 기존 RDS 임계값 설정
   cpu_threshold           = 80          # 80%
   memory_threshold        = 1073741824  # 1GB
   read_latency_threshold  = 0.1         # 100ms
   write_latency_threshold = 0.1         # 100ms
+  
+  # 새로운 DynamoDB 임계값 설정
+  dynamodb_throttle_threshold = 5       # 5회
+  dynamodb_error_threshold    = 10      # 10회
+  
+  # 새로운 ElastiCache 임계값 설정
+  elasticache_cpu_threshold         = 80   # 80%
+  elasticache_memory_threshold      = 80   # 80%
+  elasticache_connections_threshold = 100  # 100개
+  elasticache_hit_rate_threshold    = 80   # 80%
 }
