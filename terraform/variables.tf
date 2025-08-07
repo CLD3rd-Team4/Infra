@@ -163,3 +163,9 @@ variable "schedule_webhook_url" {
   type        = string
   sensitive   = true
 }
+
+variable "review_webhook_url" {
+  description = "Slack webhook URL for review service alerts"
+  type        = string
+  sensitive   = true
+}

@@ -46,3 +46,63 @@ variable "write_latency_threshold" {
   type        = number
   default     = 0.1
 }
+
+# =============================================================================
+# DynamoDB 모니터링 변수
+# =============================================================================
+
+variable "dynamodb_tables" {
+  description = "Map of DynamoDB tables with their configurations"
+  type = map(object({
+    table_name = string
+  }))
+  default = {}
+}
+
+variable "dynamodb_throttle_threshold" {
+  description = "DynamoDB throttle requests threshold (count)"
+  type        = number
+  default     = 5
+}
+
+variable "dynamodb_error_threshold" {
+  description = "DynamoDB error threshold (count)"
+  type        = number
+  default     = 10
+}
+
+# =============================================================================
+# ElastiCache 모니터링 변수
+# =============================================================================
+
+variable "elasticache_clusters" {
+  description = "Map of ElastiCache clusters with their configurations"
+  type = map(object({
+    cluster_id = string
+  }))
+  default = {}
+}
+
+variable "elasticache_cpu_threshold" {
+  description = "ElastiCache CPU utilization threshold (percentage)"
+  type        = number
+  default     = 80
+}
+
+variable "elasticache_memory_threshold" {
+  description = "ElastiCache memory usage threshold (percentage)"
+  type        = number
+  default     = 80
+}
+
+variable "elasticache_connections_threshold" {
+  description = "ElastiCache current connections threshold (count)"
+  type        = number
+  default     = 100
+}
+
+variable "elasticache_hit_rate_threshold" {
+  description = "ElastiCache cache hit rate threshold (percentage)"
+  type        = number
+  default     = 80
+}
