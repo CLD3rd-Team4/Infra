@@ -147,7 +147,7 @@ module "s3_website_bucket" {
 
   # --- S3 버킷 설정 ---
   bucket_name = "website"
-  is_public   = true
+  is_public   = false
   cloudfront_oai_arn = module.cloudfront.oai_iam_arn
 }
 
