@@ -45,7 +45,7 @@ resource "aws_elasticache_serverless_cache" "this" {
   }
   daily_snapshot_time      = "09:00"
   description              = "${var.name_prefix}${var.cluster_name}-serverless-cache-valkey"
-  major_engine_version     = "8.1"
+  major_engine_version     = "8"
   snapshot_retention_limit = var.snapshot_retention_limit
   security_group_ids       = var.security_group_ids
   subnet_ids               = var.subnet_ids
