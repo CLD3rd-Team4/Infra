@@ -125,6 +125,10 @@ spec:
           timeoutSeconds: 3
           successThreshold: 1
 
+      volumes:
+        - name: pb-volume
+          emptyDir: {}
+
       initContainers:
       - name: copy-pb
         image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:59cfbed
@@ -133,7 +137,3 @@ spec:
         volumeMounts:
           - name: pb-volume
             mountPath: /shared
-
-      volumes:
-        - name: pb-volume
-          emptyDir: {}
