@@ -707,7 +707,7 @@ module "db_alert_cloudwatch" {
   
   # ElastiCache 클러스터 모니터링
   elasticache_clusters = {
-    auth = {
+    oauth = {
       cluster_id = "mapzip-dev-auth-cache"
     }
     recommend = {
