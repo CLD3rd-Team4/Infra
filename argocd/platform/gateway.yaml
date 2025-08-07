@@ -73,6 +73,12 @@ kind: Deployment
 metadata:
   name: spring-gateway-deployment
 spec:
+  progressDeadlineSeconds: 150  # 150초 동안 준비 안 되면 배포 실패 처리
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: spring-gateway
