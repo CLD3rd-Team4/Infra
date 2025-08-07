@@ -27,16 +27,16 @@ def lambda_handler(event, context):
     
     print(f"DEBUG: Basic alarm info - Name: {alarm_name}, State: {new_state}, Time: {timestamp}")
     
-    # 메트릭 정보 추출
-    metric_name = sns_message.get('MetricName', 'Unknown')
-    namespace = sns_message.get('Namespace', 'Unknown')
-    threshold = sns_message.get('Threshold', 'Unknown')
-    
-    print(f"DEBUG: Metric info - Name: {metric_name}, Namespace: {namespace}, Threshold: {threshold}")
-    
-    # Trigger 정보에서 실제 값 추출
+    # Trigger 정보에서 메트릭 정보 추출
     trigger = sns_message.get('Trigger', {})
     print(f"DEBUG: Trigger info: {json.dumps(trigger, indent=2)}")
+    
+    # 메트릭 정보는 Trigger 객체 안에 있음
+    metric_name = trigger.get('MetricName', 'Unknown')
+    namespace = trigger.get('Namespace', 'Unknown')
+    threshold = trigger.get('Threshold', 'Unknown')
+    
+    print(f"DEBUG: Metric info - Name: {metric_name}, Namespace: {namespace}, Threshold: {threshold}")
     
     dimensions = trigger.get('Dimensions', [])
     print(f"DEBUG: Dimensions: {json.dumps(dimensions, indent=2)}")
@@ -67,8 +67,10 @@ def lambda_handler(event, context):
     kst_time = 'Unknown'
     try:
         print(f"DEBUG: Converting timestamp: {timestamp}")
-        # ISO 형식의 UTC 시간을 파싱
-        utc_dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+        # ISO 형식의 UTC 시간을 파싱 (+0000을 +00:00으로 변환)
+        timestamp_fixed = timestamp.replace('+0000', '+00:00').replace('Z', '+00:00')
+        print(f"DEBUG: Fixed timestamp format: {timestamp_fixed}")
+        utc_dt = datetime.fromisoformat(timestamp_fixed)
         print(f"DEBUG: Parsed UTC datetime: {utc_dt}")
         # KST는 UTC+9
         kst_dt = utc_dt.astimezone(timezone(timedelta(hours=9)))
