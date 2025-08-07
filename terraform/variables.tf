@@ -19,7 +19,11 @@ variable "aws_region" {
   default     = "ap-northeast-2"
 }
 
-
+variable "valkey_num_cache_nodes" {
+  description = "ElastiCache 클러스터의 캐시 노드 개수"
+  type        = number
+  default     = 1
+}
 
 variable "db_master_username" {
   description = "데이터베이스 마스터 사용자 이름"
@@ -164,6 +168,18 @@ variable "schedule_webhook_url" {
   sensitive   = true
 }
 
+
+variable "serverless_cache_data_storage_maximum" {
+  description = "Maximum storage size for serverless cache data in GB"
+  type        = number
+  default     = 10
+}
+
+variable "snapshot_retention_limit" {
+  description = "Number of days to retain snapshots for ElastiCache"
+  type        = number
+  default     = 1
+}
 variable "review_webhook_url" {
   description = "Slack webhook URL for review service alerts"
   type        = string
