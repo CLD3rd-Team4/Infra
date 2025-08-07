@@ -1,8 +1,7 @@
 import json
 import urllib3
 import os
-from datetime import datetime
-import pytz
+from datetime import datetime, timezone, timedelta
 
 def lambda_handler(event, context):
     """
@@ -45,12 +44,13 @@ def lambda_handler(event, context):
     except:
         current_value = 'Unknown'
     
-    # 시간을 한국 표준시로 변환
+    # 시간을 한국 표준시로 변환 (pytz 없이)
     kst_time = 'Unknown'
     try:
+        # ISO 형식의 UTC 시간을 파싱
         utc_dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-        kst_tz = pytz.timezone('Asia/Seoul')
-        kst_dt = utc_dt.astimezone(kst_tz)
+        # KST는 UTC+9
+        kst_dt = utc_dt.astimezone(timezone(timedelta(hours=9)))
         kst_time = kst_dt.strftime('%Y-%m-%d %H:%M:%S KST')
     except:
         kst_time = timestamp
@@ -138,7 +138,7 @@ def lambda_handler(event, context):
                             },
                             {
                                 "type": "mrkdwn",
-                                "text": f"*📊 사용량\n`{current_value_display}`"
+                                "text": f"*📊 현재값*\n`{current_value_display}`"
                             },
                             {
                                 "type": "mrkdwn",
