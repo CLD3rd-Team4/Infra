@@ -19,6 +19,8 @@ resource "aws_elasticache_replication_group" "this" {
 
   snapshot_retention_limit     = var.snapshot_retention_limit
   snapshot_window              = "03:00-04:00"
+  maintenance_window            = "sun:05:00-sun:06:00"
+
   # --- 태그 ---
   tags = merge(
     var.common_tags,
@@ -43,7 +45,7 @@ resource "aws_elasticache_serverless_cache" "this" {
   }
   daily_snapshot_time      = "09:00"
   description              = "${var.name_prefix}${var.cluster_name}-serverless-cache-valkey"
-  major_engine_version     = "7"
+  major_engine_version     = "8.1"
   snapshot_retention_limit = var.snapshot_retention_limit
   security_group_ids       = var.security_group_ids
   subnet_ids               = var.subnet_ids
