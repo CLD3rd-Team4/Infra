@@ -91,7 +91,7 @@ helm upgrade --install aws-load-balancer-controller aws-eks/aws-load-balancer-co
   --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::%AWS_ID%:role/mapzip-dev-alb-irsa-role ^
   --set serviceAccount.create=true ^
   --set serviceAccount.name=aws-load-balancer-controller ^
-  --version 1.7.1 ^
+  --version 1.13.4 ^
   --wait
 
 echo Installing External DNS...

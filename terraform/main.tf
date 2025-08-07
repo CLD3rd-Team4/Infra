@@ -188,6 +188,7 @@ module "cloudfront" {
   common_tags         = local.common_tags
   depends_on          = [module.acm_frontend]
   aliases             = ["www.mapzip.shop"]
+  is_website          = true
 }
 
 //cloudfront- a record
@@ -288,6 +289,7 @@ module "eks" {
   cluster_name        = "mapzip-${terraform.workspace}-eks"
   cluster_role_arn    = module.iam.eks_cluster_role_arn
   node_group_role_arn = module.iam.eks_node_group_role_arn
+  github_actions_role_arn = module.github_oidc_role.role_arn
   subnet_ids          = module.private_subnets.subnet_ids
   vpc_id              = module.vpc.vpc_id
   public_access_cidrs = ["0.0.0.0/0"]
@@ -377,6 +379,18 @@ module "elasticache_recommend" {
   elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
   security_group_ids            = [aws_security_group.elasticache_sg.id]
   node_type                     = "cache.t3.medium" # 추천용은 중간 사양
+}
+
+# 리뷰 서버 전용 ElastiCache
+module "elasticache_review" {
+  source                        = "./modules/elasticache"
+  name_prefix                   = local.common_prefix
+  environment                   = terraform.workspace
+  cluster_name                  = "review-cache"
+  common_tags                   = local.common_tags
+  elasticache_subnet_group_name = aws_elasticache_subnet_group.main.name
+  security_group_ids            = [aws_security_group.elasticache_sg.id]
+  node_type                     = "cache.t3.small" # 리뷰용은 작은 사양
 }
 
 resource "aws_elasticache_subnet_group" "main" {
@@ -586,7 +600,7 @@ module "vpc_endpoints" {
       type                = "Gateway"
     }
   ]
-
+  common_prefix = local.common_prefix
   common_tags = local.common_tags
 }
 

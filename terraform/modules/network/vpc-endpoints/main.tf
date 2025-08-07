@@ -13,7 +13,7 @@ resource "aws_vpc_endpoint" "this" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${each.value.name}-vpc-endpoint"
+      Name = "${var.common_prefix}${each.value.name}-vpc-endpoint"
     }
   )
 }

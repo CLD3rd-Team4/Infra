@@ -152,6 +152,16 @@ output "elasticache_recommend_cluster_endpoint" {
   sensitive   = true
 }
 
+output "elasticache_review_cluster_id" {
+  description = "The ID of the ElastiCache cluster for review"
+  value       = module.elasticache_review.elasticache_cluster_id
+}
+
+output "elasticache_review_cluster_endpoint" {
+  description = "The endpoint of the ElastiCache cluster for review"
+  value       = module.elasticache_review.elasticache_cluster_endpoint
+}
+
 # ------------------------------------------------------------------------------
 # EKS 관련 정보 출력
 # ------------------------------------------------------------------------------

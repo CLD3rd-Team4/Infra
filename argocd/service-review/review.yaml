@@ -3,7 +3,7 @@ kind: ServiceAccount
 metadata:
   name: review-service-account
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::061039804626:role/review-service-role
+    eks.amazonaws.com/role-arn: arn:aws:iam::061039804626:role/mapzip-dev-review-service-role
 ---
 apiVersion: v1
 kind: Service
@@ -64,21 +64,21 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
-        # sidecar.istio.io/userVolume: |
-        #   [
-        #     {
-        #       "name": "pb-volume",
-        #       "emptyDir": {}
-        #     }
-        #   ]
-        # sidecar.istio.io/userVolumeMount: |
-        #   [
-        #     {
-        #       "name": "pb-volume",
-        #       "mountPath": "/etc/envoy/protos",
-        #       "readonly": true
-        #     }
-        #   ]
+        sidecar.istio.io/userVolume: |
+          [
+            {
+              "name": "pb-volume",
+              "emptyDir": {}
+            }
+          ]
+        sidecar.istio.io/userVolumeMount: |
+          [
+            {
+              "name": "pb-volume",
+              "mountPath": "/etc/envoy/protos",
+              "readonly": true
+            }
+          ]
     spec:
       serviceAccountName: review-service-account
       containers:
@@ -104,7 +104,9 @@ spec:
         - name: MSK_BOOTSTRAP_SERVERS
           value: "mapzip-dev-main-msk.c5.kafka.ap-northeast-2.amazonaws.com:9092"
         - name: ELASTICACHE_ENDPOINT
-          value: "mapzip-dev-auth-cache.hwl2ad.cache.amazonaws.com"
+          value: "mapzip-dev-review-cache.xxxxx.cache.amazonaws.com"
+        - name: CLOUDFRONT_IMAGE_DOMAIN
+          value: "https://img.mapzip.shop"
         - name: GOOGLE_CLOUD_VISION_API_KEY
           valueFrom:
             secretKeyRef:
@@ -145,14 +147,14 @@ spec:
         - name: logs-volume
           mountPath: /app/logs
 
-      # initContainers:
-      # - name: copy-pb
-      #   image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
-      #   command: ["/bin/sh", "-c"]
-      #   args: ["cp /data/review_proto.pb /shared/"]
-      #   volumeMounts:
-      #     - name: pb-volume
-      #       mountPath: /shared
+      initContainers:
+      - name: copy-pb
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
+        command: ["/bin/sh", "-c"]
+        args: ["cp /data/review_proto.pb /shared/"]
+        volumeMounts:
+          - name: pb-volume
+            mountPath: /shared
 
 
       volumes:
@@ -160,8 +162,8 @@ spec:
         emptyDir: {}
       - name: logs-volume
         emptyDir: {}
-      # - name: pb-volume
-      #   emptyDir: {}
+      - name: pb-volume
+        emptyDir: {}
 
       # Pod security context
       securityContext:
