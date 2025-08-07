@@ -45,6 +45,11 @@ kind: Deployment
 metadata:
   name: config-deployment
 spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: spring-config-server
