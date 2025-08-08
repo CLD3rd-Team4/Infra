@@ -24,7 +24,6 @@ set CLUSTER_NAME=mapzip-dev-eks
 set REGION=ap-northeast-2
 set SERVICE_DOMAIN=mapzip.shop
 set PROMETHEUS_RETENTION=15d
-set TRACING_SAMPLING_PERCENTAGE=100
 
 REM 각자 프로필에 맞게 변경
 set AWS_PROFILE=lt4
