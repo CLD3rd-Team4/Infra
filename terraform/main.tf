@@ -735,6 +735,9 @@ module "db_alert_cloudwatch" {
     review = {
       cluster_id = "mapzip-dev-review-cache-001"
     }
+    schedule = {
+      cluster_id = "mapzip-dev-schedule-cache-serverless"
+    }
   }
 
   sns_topic_arns = module.db_alert_sns.sns_topic_arns
@@ -752,6 +755,4 @@ module "db_alert_cloudwatch" {
   # 새로운 ElastiCache 임계값 설정
   elasticache_cpu_threshold         = 80   # 80%
   elasticache_memory_threshold      = 80   # 80%
-  elasticache_connections_threshold = 100  # 100개
-  elasticache_hit_rate_threshold    = 80   # 80%
 }
