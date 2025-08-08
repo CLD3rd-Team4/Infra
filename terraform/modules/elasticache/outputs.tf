@@ -9,6 +9,6 @@ output "elasticache_cluster_endpoint" {
 }
 
 output "valkey_serverless_endpoint" {
-  value     = length(aws_elasticache_serverless_cache.this) > 0 ?aws_elasticache_serverless_cache.this[0].endpoint : null
+  value     = length(aws_elasticache_serverless_cache.this) > 0 ?aws_elasticache_serverless_cache.this[0].endpoint[0].address : null
   sensitive = true
 }
