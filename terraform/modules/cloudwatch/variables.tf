@@ -95,14 +95,4 @@ variable "elasticache_memory_threshold" {
   default     = 80
 }
 
-variable "elasticache_connections_threshold" {
-  description = "ElastiCache current connections threshold (count)"
-  type        = number
-  default     = 100
-}
 
-variable "elasticache_hit_rate_threshold" {
-  description = "ElastiCache cache hit rate threshold (percentage)"
-  type        = number
-  default     = 80
-}
