@@ -1,4 +1,11 @@
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: recommend-service-account
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::061039804626:role/mapzip-dev-recommend-service-role
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: recommend
