@@ -133,6 +133,30 @@ data "aws_iam_policy_document" "cluster_autoscaler_assume_role" {
   }
 }
 
+resource "aws_iam_role" "grafana_irsa" {
+  name               = "${var.common_prefix}grafana-irsa-role"
+  assume_role_policy = data.aws_iam_policy_document.grafana_assume_role.json
+  tags               = var.common_tags
+}
+
+data "aws_iam_policy_document" "grafana_assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.this.arn]
+    }
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:istio-system:grafana"]
+    }
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
   role       = aws_iam_role.alb_irsa.name
   policy_arn = aws_iam_policy.aws_load_balancer_controller.arn
@@ -146,6 +170,11 @@ resource "aws_iam_role_policy_attachment" "external_dns_attach" {
 resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach" {
   role       = aws_iam_role.cluster_autoscaler_irsa.name
   policy_arn = aws_iam_policy.cluster-autoscaler.arn
+}
+
+resource "aws_iam_role_policy_attachment" "grafana_attach" {
+  role       = aws_iam_role.grafana_irsa.name
+  policy_arn = aws_iam_policy.grafana.arn
 }
 
 # Review Service IRSA Role

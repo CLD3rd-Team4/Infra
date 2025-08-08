@@ -261,3 +261,32 @@ resource "aws_iam_policy" "cluster-autoscaler" {
 
   tags = var.common_tags
 }
+
+resource "aws_iam_policy" "grafana" {
+  name = "${var.cluster_name}-grafana-Policy"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:StartQuery",
+          "logs:StopQuery",
+          "logs:GetQueryResults",
+          "logs:GetLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:FilterLogEvents",
+          "logs:DescribeLogGroups",
+          "cloudwatch:ListMetrics",
+          "cloudwatch:GetMetricData",
+          "cloudwatch:GetMetricStatistics",
+          "cloudwatch:DescribeAlarms"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = var.common_tags
+}

@@ -2,13 +2,15 @@
 # Source: grafana/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
-automountServiceAccountToken: false
+automountServiceAccountToken: true
 metadata:
   labels:
     helm.sh/chart: grafana-8.6.3
     app.kubernetes.io/name: grafana
     app.kubernetes.io/instance: grafana
     app.kubernetes.io/version: "11.3.1"
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::061039804626:role/mapzip-dev-grafana-irsa-role
   name: grafana
   namespace: istio-system
 ---
