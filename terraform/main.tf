@@ -188,7 +188,6 @@ locals {
     "recommend-cache.${var.service_domain}"   = module.elasticache_recommend.elasticache_cluster_endpoint
     "review-cache.${var.service_domain}"  = module.elasticache_review.elasticache_cluster_endpoint
     "schedule-cache.${var.service_domain}" = module.elasticache_serverless_schedule.valkey_serverless_endpoint
-    "client-vpn.${var.service_domain}" = module.client_vpn.client_vpn_endpoint_dns_name
   }
 }
 
@@ -199,7 +198,7 @@ module "cname_records" {
   record_type = "CNAME"
   zone_id     = module.route53.zone_id
   name        = each.key
-  records     = [each.key == "client-vpn.${var.service_domain}" ? replace(each.value, "*.", "") : each.value]
+  records     = [each.value]
   ttl         = 300
 }
 
