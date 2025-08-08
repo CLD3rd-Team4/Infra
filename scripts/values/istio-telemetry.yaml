@@ -5,6 +5,6 @@ metadata:
   namespace: istio-system
 spec:
   tracing:
-  - randomSamplingPercentage: 100
+  - randomSamplingPercentage: 10
     providers:
     - name: jaeger
