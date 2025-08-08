@@ -199,7 +199,7 @@ module "cname_records" {
   record_type = "CNAME"
   zone_id     = module.route53.zone_id
   name        = each.key
-  records     = [each.value]
+  records     = [each.key == "client-vpn.${var.service_domain}" ? replace(each.value, "*.", "") : each.value]
   ttl         = 300
 }
 
