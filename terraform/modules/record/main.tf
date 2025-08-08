@@ -20,11 +20,12 @@ resource "aws_route53_record" "txt_record" {
   records = var.records
 }
 
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
+
+resource "aws_route53_record" "cname_record" {
+  count   = var.record_type == "CNAME" ? 1 : 0
+  zone_id = var.zone_id
+  name    = var.name
+  type    = "CNAME"
+  ttl     = var.ttl
+  records = var.records
 }
