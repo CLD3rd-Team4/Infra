@@ -103,13 +103,13 @@ spec:
         - name: AWS_REGION
           value: "ap-northeast-2"
         - name: DYNAMODB_TABLE_NAME
-          value: "mapzip-dev-reviews"
+          value: "mapzip-dev-review"
         - name: S3_BUCKET_NAME
           value: "mapzip-dev-image"
         - name: MSK_BOOTSTRAP_SERVERS
           value: "mapzip-dev-main-msk.c5.kafka.ap-northeast-2.amazonaws.com:9092"
         - name: REDIS_HOST
-          value: "mapzip-dev-review-cache.cache.amazonaws.com"
+          value: "review-cache.mapzip.shop"
         - name: REDIS_PORT
           value: "6379"
         - name: CLOUDFRONT_IMAGE_DOMAIN
@@ -156,7 +156,7 @@ spec:
 
       initContainers:
       - name: copy-pb
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:3760405
         command: ["/bin/sh", "-c"]
         args: ["cp /data/review_proto.pb /shared/"]
         volumeMounts:
