@@ -114,6 +114,12 @@ spec:
               cpu: "500m"
               memory: "1Gi"
           # Health Check (HTTP + Actuator로 변경)
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            failureThreshold: 30
+            periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
