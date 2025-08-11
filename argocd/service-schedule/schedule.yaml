@@ -28,7 +28,7 @@ metadata:
   name: schedule
 spec:
   selector:
-    app.kubernetes.io/name: schedule  # gateway.yaml과 일관성 있게 변경
+    app.kubernetes.io/name: schedule # gateway.yaml과 일관성 있게 변경
   type: ClusterIP
   ports:
     - name: grpc
@@ -96,53 +96,48 @@ spec:
           ]
     spec:
       containers:
-      - name: schedule-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:5d5cfc6
-        ports:
-        - containerPort: 9090
-          name: grpc
-          protocol: TCP
-        - containerPort: 8084
-          name: http
-          protocol: TCP
-
-        # 리소스 제한
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "512Mi"
-          limits:
-            cpu: "500m"
-            memory: "1Gi"
-
-        # Health Check (HTTP + Actuator로 변경)
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8084
-          initialDelaySeconds: 60
-          periodSeconds: 15
-          timeoutSeconds: 5
-          failureThreshold: 3
-
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8084
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 3
-          successThreshold: 1
-
+        - name: schedule-container
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:2652229
+          ports:
+            - containerPort: 9090
+              name: grpc
+              protocol: TCP
+            - containerPort: 8084
+              name: http
+              protocol: TCP
+          # 리소스 제한
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          # Health Check (HTTP + Actuator로 변경)
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
       volumes:
         - name: pb-volume
           emptyDir: {}
-
       initContainers:
-      - name: copy-pb
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:59cfbed
-        command: ["/bin/sh", "-c"]
-        args: ["cp /data/schedule_proto.pb /shared/"]
-        volumeMounts:
-          - name: pb-volume
-            mountPath: /shared
+        - name: copy-pb
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:22f7d09
+          command: ["/bin/sh", "-c"]
+          args: ["cp /data/schedule_proto.pb /shared/"]
+          volumeMounts:
+            - name: pb-volume
+              mountPath: /shared
