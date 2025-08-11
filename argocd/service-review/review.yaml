@@ -114,11 +114,6 @@ spec:
           value: "6379"
         - name: CLOUDFRONT_IMAGE_DOMAIN
           value: "https://img.mapzip.shop"
-        - name: GOOGLE_CLOUD_VISION_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: google-cloud-vision-secret
-              key: api-key
 
         resources:
           requests:
