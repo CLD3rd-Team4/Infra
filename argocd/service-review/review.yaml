@@ -88,7 +88,7 @@ spec:
       serviceAccountName: review-service-account
       containers:
       - name: review-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:791ad68
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:b92bcd2
         ports:
         - protocol: TCP
           containerPort: 8080
