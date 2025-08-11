@@ -156,7 +156,7 @@ spec:
 
       initContainers:
       - name: copy-pb
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:3760405
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:5d5cfc6
         command: ["/bin/sh", "-c"]
         args: ["cp /data/review_proto.pb /shared/"]
         volumeMounts:
