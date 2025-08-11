@@ -79,21 +79,21 @@ spec:
       labels:
         app.kubernetes.io/name: schedule
       annotations:
-        # sidecar.istio.io/userVolume: |
-        #   [
-        #     {
-        #       "name": "pb-volume",
-        #       "emptyDir": {}
-        #     }
-        #   ]
-        # sidecar.istio.io/userVolumeMount: |
-        #   [
-        #     {
-        #       "name": "pb-volume",
-        #       "mountPath": "/etc/envoy/protos",
-        #       "readonly": true
-        #     }
-        #   ]
+        sidecar.istio.io/userVolume: |
+          [
+            {
+              "name": "pb-volume",
+              "emptyDir": {}
+            }
+          ]
+        sidecar.istio.io/userVolumeMount: |
+          [
+            {
+              "name": "pb-volume",
+              "mountPath": "/etc/envoy/protos",
+              "readonly": true
+            }
+          ]
     spec:
       containers:
       - name: schedule-container
