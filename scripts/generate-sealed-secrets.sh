@@ -77,7 +77,8 @@ fi
 
 # Check if sealed-secrets controller is running
 echo "Checking Sealed Secrets Controller..."
-if ! kubectl get deployment -n $CONTROLLER_NAMESPACE -l app.kubernetes.io/name=sealed-secrets &> /dev/null; then
+CONTROLLER_COUNT=$(kubectl get deployment -n $CONTROLLER_NAMESPACE -l app.kubernetes.io/name=sealed-secrets --no-headers 2>/dev/null | wc -l)
+if [ "$CONTROLLER_COUNT" -eq 0 ]; then
     echo "⚠️  Sealed Secrets Controller not found. Installing..."
     
     # Add Sealed Secrets Helm repository
