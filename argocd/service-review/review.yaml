@@ -87,92 +87,82 @@ spec:
     spec:
       serviceAccountName: review-service-account
       containers:
-      - name: review-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:4ccce2d
-        ports:
-        - protocol: TCP
-          containerPort: 8080
-        - protocol: TCP
-          containerPort: 50051
-
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "prod"
-        - name: CONFIG_SERVER_URI
-          value: "http://config.service-platform.svc.cluster.local:8888"
-        - name: AWS_REGION
-          value: "ap-northeast-2"
-        - name: DYNAMODB_TABLE_NAME
-          value: "mapzip-dev-review"
-        - name: S3_BUCKET_NAME
-          value: "mapzip-dev-image"
-        - name: MSK_BOOTSTRAP_SERVERS
-          value: "mapzip-dev-main-msk.c5.kafka.ap-northeast-2.amazonaws.com:9092"
-        - name: REDIS_HOST
-          value: "review-cache.mapzip.shop"
-        - name: REDIS_PORT
-          value: "6379"
-        - name: CLOUDFRONT_IMAGE_DOMAIN
-          value: "https://img.mapzip.shop"
-
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "512Mi"
-          limits:
-            cpu: "800m"
-            memory: "1Gi"
-
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          initialDelaySeconds: 120
-          periodSeconds: 20
-          timeoutSeconds: 10
-          failureThreshold: 3
-
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          initialDelaySeconds: 90
-          periodSeconds: 15
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
-
-        # Volume mounts for temporary files and logs
-        volumeMounts:
-        - name: tmp-volume
-          mountPath: /tmp
-        - name: logs-volume
-          mountPath: /app/logs
-
+        - name: review-container
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:4ccce2d
+          ports:
+            - protocol: TCP
+              containerPort: 8080
+            - protocol: TCP
+              containerPort: 50051
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: CONFIG_SERVER_URI
+              value: "http://config.service-platform.svc.cluster.local:8888"
+            - name: AWS_REGION
+              value: "ap-northeast-2"
+            - name: DYNAMODB_TABLE_NAME
+              value: "mapzip-dev-review"
+            - name: S3_BUCKET_NAME
+              value: "mapzip-dev-image"
+            - name: MSK_BOOTSTRAP_SERVERS
+              value: "mapzip-dev-main-msk.c5.kafka.ap-northeast-2.amazonaws.com:9092"
+            - name: REDIS_HOST
+              value: "review-cache.mapzip.shop"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: CLOUDFRONT_IMAGE_DOMAIN
+              value: "https://img.mapzip.shop"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "800m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          # Volume mounts for temporary files and logs
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /app/logs
       initContainers:
-      - name: copy-pb
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:5d5cfc6
-        command: ["/bin/sh", "-c"]
-        args: ["cp /data/review_proto.pb /shared/"]
-        volumeMounts:
-          - name: pb-volume
-            mountPath: /shared
-
-
+        - name: copy-pb
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:59d3a87
+          command: ["/bin/sh", "-c"]
+          args: ["cp /data/review_proto.pb /shared/"]
+          volumeMounts:
+            - name: pb-volume
+              mountPath: /shared
       volumes:
-      - name: tmp-volume
-        emptyDir: {}
-      - name: logs-volume
-        emptyDir: {}
-      - name: pb-volume
-        emptyDir: {}
-
+        - name: tmp-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: pb-volume
+          emptyDir: {}
       # Pod security context
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
-
 ---
 # gRPC Service (separate from main service)
 apiVersion: v1
