@@ -87,50 +87,47 @@ spec:
     spec:
       serviceAccountName: recommend-service-account
       containers:
-      - name: recommend-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:latest
-        ports:
-        - protocol: TCP
-          containerPort: 8080
-        - protocol: TCP
-          containerPort: 9090
+        - name: recommend-container
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:latest
+          ports:
+            - protocol: TCP
+              containerPort: 8080
+            - protocol: TCP
+              containerPort: 9090
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "800m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      initContainers: []
+# initContainers:
+# - name: copy-pb
+#   image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
+#   command: ["/bin/sh", "-c"]
+#   args: ["cp /data/recommend_proto.pb /shared/"]
+#   volumeMounts:
+#     - name: pb-volume
+#       mountPath: /shared
 
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "512Mi"
-          limits:
-            cpu: "800m"
-            memory: "1Gi"
-
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-          initialDelaySeconds: 120
-          periodSeconds: 20
-          timeoutSeconds: 10
-          failureThreshold: 3
-
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          initialDelaySeconds: 90
-          periodSeconds: 15
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
-
-      # initContainers:
-      # - name: copy-pb
-      #   image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
-      #   command: ["/bin/sh", "-c"]
-      #   args: ["cp /data/recommend_proto.pb /shared/"]
-      #   volumeMounts:
-      #     - name: pb-volume
-      #       mountPath: /shared
-            
-      # volumes:
-      # - name: pb-volume
-      #   emptyDir: {}
+# volumes:
+# - name: pb-volume
+#   emptyDir: {}
