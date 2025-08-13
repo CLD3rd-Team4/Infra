@@ -31,6 +31,23 @@ spec:
     retries:
       attempts: 5
       perTryTimeout: 5s
+    corsPolicy:
+      allowOrigin:
+      - "https://www.mapzip.shop"
+      allowMethods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+      allowHeaders:
+      - Content-Type
+      - Authorization
+      - X-Requested-With
+      - Accept
+      - Origin
+      maxAge: "2h"
+      allowCredentials: true
 ---
 apiVersion: v1
 kind: Service
