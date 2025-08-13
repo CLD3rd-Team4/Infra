@@ -88,7 +88,7 @@ spec:
       serviceAccountName: recommend-service-account
       containers:
         - name: recommend-container
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:0f66c18
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:80f5e30
           ports:
             - protocol: TCP
               containerPort: 8080
