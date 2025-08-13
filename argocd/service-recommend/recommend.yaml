@@ -16,8 +16,8 @@ spec:
   ports:
     - name: http
       protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8082
+      targetPort: 8082
     - name: grpc
       protocol: TCP
       port: 9090
@@ -67,7 +67,7 @@ spec:
         app.kubernetes.io/name: recommend
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "8080"
+        prometheus.io/port: "8082"
         prometheus.io/path: "/actuator/prometheus"
         # sidecar.istio.io/userVolume: |
         #   [
@@ -91,7 +91,7 @@ spec:
           image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:078c150
           ports:
             - protocol: TCP
-              containerPort: 8080
+              containerPort: 8082
             - protocol: TCP
               containerPort: 9090
           resources:
@@ -104,7 +104,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8080
+              port: 8082
             initialDelaySeconds: 120
             periodSeconds: 20
             timeoutSeconds: 10
@@ -112,7 +112,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: 8082
             initialDelaySeconds: 90
             periodSeconds: 15
             timeoutSeconds: 5
