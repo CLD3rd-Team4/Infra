@@ -147,18 +147,27 @@ module "s3_website_bucket" {
 
   # --- S3 버킷 설정 ---
   bucket_name = "website"
-  is_public   = false
+  is_public   = true
   cloudfront_oai_arn = module.cloudfront.oai_iam_arn
 }
 
 // 웹사이트 s3 버킷 정책
-module "s3_bucket_policy_website" {
-  source = "./modules/s3-bucket-policy"
+resource "aws_s3_bucket_policy" "website_policy" {
+  bucket = module.s3_website_bucket.bucket_id
 
-  cloudfront_oai_arn = module.cloudfront.oai_iam_arn
-  bucket_arn = module.s3_website_bucket.bucket_arn
-  bucket_id = module.s3_website_bucket.bucket_id
-  depends_on = [module.s3_website_bucket, module.cloudfront]
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowPublic"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${module.s3_website_bucket.bucket_arn}/*"
+      }
+    ]
+  })
+  depends_on = [module.s3_website_bucket]
 }
 
 // 이미지 s3 버킷 정책
