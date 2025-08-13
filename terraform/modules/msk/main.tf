@@ -15,6 +15,14 @@ resource "aws_msk_cluster" "this" {
     }
   }
 
+  lifecycle {
+    ignore_changes = [
+      client_authentication,
+      encryption_info,
+      open_monitoring
+    ]
+  }
+
   tags = merge(
     var.common_tags,
     {
