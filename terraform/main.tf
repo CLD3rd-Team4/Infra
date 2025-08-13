@@ -167,6 +167,7 @@ resource "aws_s3_bucket_policy" "website_policy" {
       }
     ]
   })
+  depends_on = [module.s3_website_bucket]
 }
 
 // 이미지 s3 버킷 정책
