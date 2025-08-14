@@ -118,6 +118,13 @@ spec:
             timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 120
+            failureThreshold: 30
+            periodSeconds: 10
       initContainers: []
 # initContainers:
 # - name: copy-pb
