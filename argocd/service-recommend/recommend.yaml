@@ -20,8 +20,8 @@ spec:
       targetPort: 8082
     - name: grpc
       protocol: TCP
-      port: 9090
-      targetPort: 9090
+      port: 9092
+      targetPort: 9092
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -93,7 +93,7 @@ spec:
             - protocol: TCP
               containerPort: 8082
             - protocol: TCP
-              containerPort: 9090
+              containerPort: 9092
           resources:
             requests:
               cpu: "200m"
