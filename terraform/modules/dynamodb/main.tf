@@ -33,6 +33,24 @@ resource "aws_dynamodb_table" "this" {
     type = "S"
   }
 
+  # 평점 기반 GSI를 위한 속성들
+  attribute {
+    name = "rating_category"
+    type = "S"
+  }
+
+  # 추천용 GSI를 위한 속성
+  attribute {
+    name = "verified_rating_status"
+    type = "S"
+  }
+
+  # 지역 기반 GSI를 위한 속성
+  attribute {
+    name = "address_region"
+    type = "S"
+  }
+
   # 사용자별 리뷰 조회를 위한 UserIdIndex (시간순 정렬)
   global_secondary_index {
     name     = "UserIdIndex"
@@ -45,6 +63,30 @@ resource "aws_dynamodb_table" "this" {
   global_secondary_index {
     name     = "StatusIndex"
     hash_key = "review_status"
+    range_key = "created_at"
+    projection_type = "ALL"
+  }
+
+  # 평점 기반 GSI (RatingIndex)
+  global_secondary_index {
+    name     = "RatingIndex"
+    hash_key = "rating_category"
+    range_key = "created_at"
+    projection_type = "ALL"
+  }
+
+  # 추천용 GSI (RecommendationIndex)
+  global_secondary_index {
+    name     = "RecommendationIndex"
+    hash_key = "verified_rating_status"
+    range_key = "created_at"
+    projection_type = "ALL"
+  }
+
+  # 지역 기반 GSI (AddressIndex)
+  global_secondary_index {
+    name     = "AddressIndex"
+    hash_key = "address_region"
     range_key = "created_at"
     projection_type = "ALL"
   }
