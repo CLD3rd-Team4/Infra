@@ -90,10 +90,12 @@ spec:
         - name: recommend-container
           image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:554ebd0
           ports:
-            - protocol: TCP
-              containerPort: 8082
-            - protocol: TCP
-              containerPort: 9092
+            - containerPort: 9092
+              name: grpc
+              protocol: TCP
+            - containerPort: 8082
+              name: http
+              protocol: TCP
           resources:
             requests:
               cpu: "200m"
