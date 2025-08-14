@@ -97,7 +97,7 @@ spec:
     spec:
       containers:
         - name: schedule-container
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:83eda2d
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:d9c8008
           ports:
             - containerPort: 9090
               name: grpc
@@ -144,7 +144,7 @@ spec:
           emptyDir: {}
       initContainers:
         - name: copy-pb
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:097bbed
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:d9c8008
           command: ["/bin/sh", "-c"]
           args: ["cp /data/schedule_proto.pb /shared/"]
           volumeMounts:
