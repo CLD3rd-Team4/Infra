@@ -89,7 +89,7 @@ spec:
       serviceAccountName: review-service-account
       containers:
         - name: review-container
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:ee529cd
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:c7cb367
           ports:
             - protocol: TCP
               containerPort: 8080
@@ -120,8 +120,6 @@ spec:
               value: "1000ms"
             - name: SPRING_DATA_REDIS_TIMEOUT
               value: "1000ms"
-            - name: SPRING_CACHE_TYPE
-              value: "none"
             - name: CLOUDFRONT_IMAGE_DOMAIN
               value: "https://img.mapzip.shop"
           resources:
