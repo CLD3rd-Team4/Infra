@@ -144,7 +144,7 @@ spec:
           emptyDir: {}
       initContainers:
         - name: copy-pb
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:d9c8008
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:ae50018
           command: ["/bin/sh", "-c"]
           args: ["cp /data/schedule_proto.pb /shared/"]
           volumeMounts:
