@@ -30,7 +30,7 @@ spec:
           number: 8080
     retries:
       attempts: 5
-      perTryTimeout: 5s
+      perTryTimeout: 30s
     corsPolicy:
       allowOrigin:
       - "https://www.mapzip.shop"
