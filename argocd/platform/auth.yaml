@@ -64,7 +64,7 @@ spec:
     spec:
       containers:
       - name: auth-service-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-auth:9778c10
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-auth:0d77d51
         ports:
         - protocol: TCP
           containerPort: 8080
