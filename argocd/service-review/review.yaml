@@ -69,6 +69,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
+        kubectl.kubernetes.io/restartedAt: "2025-08-14T10:59:00Z"
         sidecar.istio.io/userVolume: |
           [
             {
@@ -88,7 +89,7 @@ spec:
       serviceAccountName: review-service-account
       containers:
         - name: review-container
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:c7cb367
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:ee529cd
           ports:
             - protocol: TCP
               containerPort: 8080
