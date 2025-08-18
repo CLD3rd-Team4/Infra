@@ -53,17 +53,17 @@ resource "aws_s3_bucket_versioning" "this" {
 }
 
 # S3 정적 웹 호스팅
-resource "aws_s3_bucket_website_configuration" "this" {
-  count = var.is_public ? 1 : 0
-  bucket = aws_s3_bucket.this.id
+# resource "aws_s3_bucket_website_configuration" "this" {
+#   count = var.is_public ? 1 : 0
+#   bucket = aws_s3_bucket.this.id
 
-  index_document {
-    suffix = "index.html"
-  }
+#   index_document {
+#     suffix = "index.html"
+#   }
 
-  # error_document {
-  #   key = "error.html"
-  # }
-}
+#   # error_document {
+#   #   key = "error.html"
+#   # }
+# }
 
 
