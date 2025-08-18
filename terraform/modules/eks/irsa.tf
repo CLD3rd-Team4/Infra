@@ -229,8 +229,10 @@ resource "aws_iam_policy" "review_service_policy" {
           "dynamodb:BatchWriteItem"
         ]
         Resource = [
-          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}reviews",
-          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}reviews/index/*"
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}review",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}review-pending",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}review/index/*",
+          "arn:aws:dynamodb:${var.aws_region}:*:table/${var.common_prefix}review-pending/index/*"
         ]
       },
       {

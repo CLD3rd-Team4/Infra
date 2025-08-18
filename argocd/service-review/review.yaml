@@ -89,7 +89,7 @@ spec:
       serviceAccountName: review-service-account
       containers:
         - name: review-container
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:ee529cd
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-review:87545b3
           ports:
             - protocol: TCP
               containerPort: 8080
@@ -100,6 +100,10 @@ spec:
               value: "prod"
             - name: CONFIG_SERVER_URI
               value: "http://config.service-platform.svc.cluster.local:8888"
+            - name: SPRING_CLOUD_CONFIG_FAILFAST
+              value: "false"
+            - name: SPRING_CLOUD_CONFIG_RETRY_MAXATTEMPTS
+              value: "3"
             - name: AWS_REGION
               value: "ap-northeast-2"
             - name: DYNAMODB_TABLE_NAME
@@ -112,6 +116,10 @@ spec:
               value: "review-cache.mapzip.shop"
             - name: REDIS_PORT
               value: "6379"
+            - name: REDIS_TIMEOUT
+              value: "1000ms"
+            - name: SPRING_DATA_REDIS_TIMEOUT
+              value: "1000ms"
             - name: CLOUDFRONT_IMAGE_DOMAIN
               value: "https://img.mapzip.shop"
           resources:
@@ -125,19 +133,19 @@ spec:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
-            initialDelaySeconds: 120
-            periodSeconds: 20
-            timeoutSeconds: 10
-            failureThreshold: 3
+            initialDelaySeconds: 180
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
               port: 8080
-            initialDelaySeconds: 90
-            periodSeconds: 15
-            timeoutSeconds: 5
+            initialDelaySeconds: 150
+            periodSeconds: 20
+            timeoutSeconds: 10
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 8
           # Volume mounts for temporary files and logs
           volumeMounts:
             - name: tmp-volume

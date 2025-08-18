@@ -20,8 +20,8 @@ spec:
       targetPort: 8082
     - name: grpc
       protocol: TCP
-      port: 9090
-      targetPort: 9090
+      port: 9092
+      targetPort: 9092
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -69,31 +69,33 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8082"
         prometheus.io/path: "/actuator/prometheus"
-        # sidecar.istio.io/userVolume: |
-        #   [
-        #     {
-        #       "name": "pb-volume",
-        #       "emptyDir": {}
-        #     }
-        #   ]
-        # sidecar.istio.io/userVolumeMount: |
-        #   [
-        #     {
-        #       "name": "pb-volume",
-        #       "mountPath": "/etc/envoy/protos",
-        #       "readonly": true
-        #     }
-        #   ]
+        sidecar.istio.io/userVolume: |
+          [
+            {
+              "name": "pb-volume",
+              "emptyDir": {}
+            }
+          ]
+        sidecar.istio.io/userVolumeMount: |
+          [
+            {
+              "name": "pb-volume",
+              "mountPath": "/etc/envoy/protos",
+              "readonly": true
+            }
+          ]
     spec:
       serviceAccountName: recommend-service-account
       containers:
         - name: recommend-container
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:92b7ad8
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:e6e901b
           ports:
-            - protocol: TCP
-              containerPort: 8082
-            - protocol: TCP
-              containerPort: 9090
+            - containerPort: 9092
+              name: grpc
+              protocol: TCP
+            - containerPort: 8082
+              name: http
+              protocol: TCP
           resources:
             requests:
               cpu: "200m"
@@ -118,16 +120,22 @@ spec:
             timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 3
-      initContainers: []
-# initContainers:
-# - name: copy-pb
-#   image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:latest
-#   command: ["/bin/sh", "-c"]
-#   args: ["cp /data/recommend_proto.pb /shared/"]
-#   volumeMounts:
-#     - name: pb-volume
-#       mountPath: /shared
-
-# volumes:
-# - name: pb-volume
-#   emptyDir: {}
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 120
+            failureThreshold: 30
+            periodSeconds: 10
+      initContainers:
+      - name: copy-pb
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:ae50018
+        command: ["/bin/sh", "-c"]
+        args: ["cp /data/recommend_proto.pb /shared/"]
+        volumeMounts:
+          - name: pb-volume
+            mountPath: /shared
+      
+      volumes:
+      - name: pb-volume
+        emptyDir: {}

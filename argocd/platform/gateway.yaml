@@ -30,7 +30,7 @@ spec:
           number: 8080
     retries:
       attempts: 5
-      perTryTimeout: 5s
+      perTryTimeout: 30s
     corsPolicy:
       allowOrigin:
       - "https://www.mapzip.shop"
@@ -116,7 +116,7 @@ spec:
     spec:
       containers:
       - name: spring-gateway-container
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-gateway:1c94d29
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-gateway:823a670
         ports:
         - protocol: TCP
           containerPort: 8080
