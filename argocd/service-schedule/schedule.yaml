@@ -79,6 +79,9 @@ spec:
       labels:
         app.kubernetes.io/name: schedule
       annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8084"
+        prometheus.io/path: "/actuator/prometheus"
         sidecar.istio.io/userVolume: |
           [
             {
