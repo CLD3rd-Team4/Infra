@@ -129,7 +129,7 @@ spec:
             periodSeconds: 10
       initContainers:
         - name: copy-pb
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:bd503d9
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:ce353a0
           command: ["/bin/sh", "-c"]
           args: ["cp /data/recommend_proto.pb /shared/"]
           volumeMounts:
