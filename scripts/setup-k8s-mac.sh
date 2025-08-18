@@ -220,7 +220,6 @@ echo "Creating Fluent Bit configuration..."
 helm upgrade --install fluent-bit fluent/fluent-bit \
   --namespace monitoring \
   --create-namespace \
-  --kube-context cluster1 \
   --set-file config.outputs=values/fluentbit-output.conf
 
 

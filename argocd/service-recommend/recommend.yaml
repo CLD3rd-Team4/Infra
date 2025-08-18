@@ -88,7 +88,7 @@ spec:
       serviceAccountName: recommend-service-account
       containers:
         - name: recommend-container
-          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:554ebd0
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:3d5cc94
           ports:
             - containerPort: 9092
               name: grpc
@@ -128,14 +128,13 @@ spec:
             failureThreshold: 30
             periodSeconds: 10
       initContainers:
-      - name: copy-pb
-        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:ae50018
-        command: ["/bin/sh", "-c"]
-        args: ["cp /data/recommend_proto.pb /shared/"]
-        volumeMounts:
-          - name: pb-volume
-            mountPath: /shared
-      
+        - name: copy-pb
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:3d5cc94
+          command: ["/bin/sh", "-c"]
+          args: ["cp /data/recommend_proto.pb /shared/"]
+          volumeMounts:
+            - name: pb-volume
+              mountPath: /shared
       volumes:
-      - name: pb-volume
-        emptyDir: {}
+        - name: pb-volume
+          emptyDir: {}
