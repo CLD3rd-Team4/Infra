@@ -503,8 +503,8 @@ resource "aws_security_group" "msk_sg" {
   vpc_id      = module.vpc.vpc_id
 
   ingress {
-    from_port   = 9092 # Kafka plaintext port
-    to_port     = 9092
+    from_port   = 9094 # Kafka tls port
+    to_port     = 9094
     protocol    = "tcp"
     cidr_blocks = [module.vpc.vpc_cidr_block]
   }
