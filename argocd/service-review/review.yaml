@@ -122,6 +122,8 @@ spec:
               value: "1000ms"
             - name: CLOUDFRONT_IMAGE_DOMAIN
               value: "https://img.mapzip.shop"
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google-api.json"
           resources:
             requests:
               cpu: "200m"
@@ -152,6 +154,9 @@ spec:
               mountPath: /tmp
             - name: logs-volume
               mountPath: /app/logs
+            - name: gcp-creds
+              mountPath: "/var/secrets"
+              readOnly: true
       initContainers:
         - name: copy-pb
           image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:59d3a87
@@ -167,6 +172,12 @@ spec:
           emptyDir: {}
         - name: pb-volume
           emptyDir: {}
+        - name: gcp-creds
+          secret:
+            secretName: google-api
+            items:
+            - key: api-key
+              path: google-api.json
       # Pod security context
       securityContext:
         runAsNonRoot: true
