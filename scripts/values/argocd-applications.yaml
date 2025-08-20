@@ -3,6 +3,9 @@ kind: Application
 metadata:
   name: mapzip-dev-service-schedule
   namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-schedule"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-schedule"
 spec:
   destination:
     namespace: service-schedule
@@ -24,6 +27,9 @@ kind: Application
 metadata:
   name: mapzip-dev-service-recommend
   namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-recommend"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-recommend"
 spec:
   destination:
     namespace: service-recommend
@@ -45,6 +51,9 @@ kind: Application
 metadata:
   name: mapzip-dev-service-review
   namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-review"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-review"
 spec:
   destination:
     namespace: service-review
@@ -66,6 +75,9 @@ kind: Application
 metadata:
   name: mapzip-dev-service-platform
   namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-platform"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-platform"
 spec:
   destination:
     namespace: service-platform
@@ -87,6 +99,9 @@ kind: Application
 metadata:
   name: mapzip-dev-demo
   namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-platform"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-platform"
 spec:
   destination:
     namespace: demo

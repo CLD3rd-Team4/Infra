@@ -126,10 +126,10 @@ spec:
               value: "/var/secrets/google-api.json"
           resources:
             requests:
-              cpu: "200m"
+              cpu: "100m"
               memory: "512Mi"
             limits:
-              cpu: "800m"
+              cpu: "500m"
               memory: "1Gi"
           livenessProbe:
             httpGet:
