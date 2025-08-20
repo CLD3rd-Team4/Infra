@@ -98,7 +98,7 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: "300m"
+              cpu: "200m"
               memory: "512Mi"
             limits:
               cpu: "800m"
