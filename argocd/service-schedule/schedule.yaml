@@ -111,7 +111,7 @@ spec:
           # 리소스 제한
           resources:
             requests:
-              cpu: "200m"
+              cpu: "150m"
               memory: "512Mi"
             limits:
               cpu: "500m"
