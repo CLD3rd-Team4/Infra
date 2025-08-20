@@ -32,8 +32,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: review-deployment
-  minReplicas: 2
-  maxReplicas: 6
+  minReplicas: 1
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
@@ -126,8 +126,8 @@ spec:
               value: "/var/secrets/google-api.json"
           resources:
             requests:
-              cpu: "100m"
-              memory: "512Mi"
+              cpu: "200m"
+              memory: "612Mi"
             limits:
               cpu: "500m"
               memory: "1Gi"
