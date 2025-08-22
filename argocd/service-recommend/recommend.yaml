@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: recommend-service-account
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::061039804626:role/mapzip-dev-recommend-service-role
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommend
+spec:
+  selector:
+    app.kubernetes.io/name: recommend
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8082
+      targetPort: 8082
+    - name: grpc
+      protocol: TCP
+      port: 9092
+      targetPort: 9092
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: recommend-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: recommend-deployment
+  minReplicas: 1
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommend-deployment
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: recommend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: recommend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8082"
+        prometheus.io/path: "/actuator/prometheus"
+        sidecar.istio.io/userVolume: |
+          [
+            {
+              "name": "pb-volume",
+              "emptyDir": {}
+            }
+          ]
+        sidecar.istio.io/userVolumeMount: |
+          [
+            {
+              "name": "pb-volume",
+              "mountPath": "/etc/envoy/protos",
+              "readonly": true
+            }
+          ]
+    spec:
+      serviceAccountName: recommend-service-account
+      containers:
+        - name: recommend-container
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-recommend:9772575
+          ports:
+            - containerPort: 9092
+              name: grpc
+              protocol: TCP
+            - containerPort: 8082
+              name: http
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "800m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 120
+            failureThreshold: 30
+            periodSeconds: 10
+      initContainers:
+        - name: copy-pb
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:80f1cb7
+          command: ["/bin/sh", "-c"]
+          args: ["cp /data/recommend_proto.pb /shared/"]
+          volumeMounts:
+            - name: pb-volume
+              mountPath: /shared
+      volumes:
+        - name: pb-volume
+          emptyDir: {}

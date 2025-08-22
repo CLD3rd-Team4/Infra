@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: config
+spec:
+  selector:
+    app.kubernetes.io/name: spring-config-server
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8888
+      targetPort: 8888
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: config-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: config-deployment
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-deployment
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spring-config-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spring-config-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8888"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+      - name: spring-config-server-container
+        image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-config:f2db02d
+        ports:
+        - protocol: TCP
+          containerPort: 8888
+
+        env:
+        - name: CONFIG_REPO_URI
+          value: "https://github.com/CLD3rd-Team4/App"
+        - name: GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: config-server-git-secret
+              key: username
+        - name: GIT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: config-server-git-secret
+              key: token
+        - name: ENCRYPT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: config-server-encrypt-secret
+              key: encrypt-key
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "600Mi"
+          limits:
+            cpu: "500m"
+            memory: "800Mi"
+
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8888
+          initialDelaySeconds: 90
+          periodSeconds: 15
+          timeoutSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8888
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 2
+
+        # Config Server 특화 설정
+        volumeMounts:
+        - name: config-cache
+          mountPath: /tmp/config-repo
+
+      volumes:
+      - name: config-cache
+        emptyDir: {}

@@ -1,0 +1,119 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-schedule
+  namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-schedule"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-schedule"
+spec:
+  destination:
+    namespace: service-schedule
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/service-schedule
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-recommend
+  namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-recommend"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-recommend"
+spec:
+  destination:
+    namespace: service-recommend
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/service-recommend
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-review
+  namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-review"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-review"
+spec:
+  destination:
+    namespace: service-review
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/service-review
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-service-platform
+  namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-platform"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-platform"
+spec:
+  destination:
+    namespace: service-platform
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/platform
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mapzip-dev-demo
+  namespace: argocd
+  annotations: 
+    notifications.argoproj.io/subscribe.on-deployed.slack: "#1-platform"
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: "#1-platform"
+spec:
+  destination:
+    namespace: demo
+    server: https://kubernetes.default.svc
+  source:
+    path: argocd/demo
+    repoURL: https://github.com/CLD3rd-Team4/Infra
+    targetRevision: dev
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
