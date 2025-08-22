@@ -1,0 +1,155 @@
+# Secret들은 Terraform에서 관리하므로 여기서 제외
+# 
+# terraform에서 생성할 Secret 구조:
+# 1. schedule-db-credentials:
+#    - db_master_username (DB정보)
+#    - db_master_password (DB정보)  
+#    - AURORA_CLUSTER_ENDPOINT (인프라 정보)
+#    - DB_NAME (환경별 설정: 기본 postgres)
+# 2. schedule-api-keys:
+#    - TMAP_API_KEY (API 키)
+#    - KAKAO_API_KEY (API 키)
+---
+# 3. 애플리케이션 설정을 위한 ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: schedule-config
+data:
+  # DB 관련 설정들은 모두 Terraform에서 관리
+  # AURORA_CLUSTER_ENDPOINT, DB_NAME은 Secret으로 이동
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  GRPC_SERVER_PORT: "9090"
+---
+# 4. Schedule Service (ClusterIP - 내부 통신용)
+apiVersion: v1
+kind: Service
+metadata:
+  name: schedule
+spec:
+  selector:
+    app.kubernetes.io/name: schedule # gateway.yaml과 일관성 있게 변경
+  type: ClusterIP
+  ports:
+    - name: grpc
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+    - name: http
+      protocol: TCP
+      port: 8084
+      targetPort: 8084
+---
+# 5. HPA 추가 (gateway.yaml 패턴 참고)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: schedule-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: schedule-deployment
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+# 6. 애플리케이션 배포를 위한 Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schedule-deployment
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: schedule
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: schedule
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8084"
+        prometheus.io/path: "/actuator/prometheus"
+        sidecar.istio.io/userVolume: |
+          [
+            {
+              "name": "pb-volume",
+              "emptyDir": {}
+            }
+          ]
+        sidecar.istio.io/userVolumeMount: |
+          [
+            {
+              "name": "pb-volume",
+              "mountPath": "/etc/envoy/protos",
+              "readonly": true
+            }
+          ]
+    spec:
+      containers:
+        - name: schedule-container
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-schedule:1d43f29
+          ports:
+            - containerPort: 9090
+              name: grpc
+              protocol: TCP
+            - containerPort: 8084
+              name: http
+              protocol: TCP
+          # 리소스 제한
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          # Health Check (HTTP + Actuator로 변경)
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            initialDelaySeconds: 60
+            failureThreshold: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+      volumes:
+        - name: pb-volume
+          emptyDir: {}
+      initContainers:
+        - name: copy-pb
+          image: 061039804626.dkr.ecr.ap-northeast-2.amazonaws.com/mapzip-dev-ecr-pb:54925eb
+          command: ["/bin/sh", "-c"]
+          args: ["cp /data/schedule_proto.pb /shared/"]
+          volumeMounts:
+            - name: pb-volume
+              mountPath: /shared
